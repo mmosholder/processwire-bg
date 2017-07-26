@@ -1,0 +1,81 @@
+.content-page {
+  padding-top: pxem(50);
+
+  .content {
+    @include col(12);
+
+    @include mq($from: $breakpoint-small) {
+      @include col(10);
+      @include offset(1);
+    }
+  }
+
+  h1 {
+    @include page-title;
+    padding: 0 0 pxem(5) 0;
+    text-align: center;
+    border-bottom: 2px solid $text-dark;
+    margin-bottom: pxem(30);
+  }
+
+  .-two-columns {
+    column-count: 2;
+    column-gap: pxem(25);
+    height: pxem(200);
+    @include text-paragraph;
+    margin-bottom: pxem(50);
+
+    p:first-of-type {
+      margin-bottom: pxem(15);
+    }
+  }
+
+  .-full-width-image {
+    @include col(12);
+    margin-bottom: pxem(70);
+
+    img {
+      width: 100%;
+      height: auto;
+    }
+  }
+
+  .team-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    margin-bottom: pxem(70);
+
+    .-text {
+      @include col(6);
+
+      p {
+        margin-top: pxem(15);
+      }
+
+      p:first-of-type {
+        margin-top: pxem(0);
+      }
+    }
+
+    .-image {
+      @include col(6);
+
+      img {
+        width: 100%;
+      }
+    }
+
+    &.-text-left {
+      .-text {
+        padding-right: pxem(50);
+      }
+    }
+
+    &.-text-right {
+      .-text {
+        padding-left: pxem(50);
+      }
+    }
+  }
+}

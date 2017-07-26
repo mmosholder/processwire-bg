@@ -1,0 +1,92 @@
+.contact {
+  .-center-align {
+    @include col(12);
+    margin-bottom: pxem(30);
+
+    @include mq($from: $breakpoint-small) {
+      @include col(8);
+      @include offset(2);
+      margin-bottom: pxem(50);
+    }
+  }
+
+  .-contact-columns {
+    display: flex;
+    margin-bottom: pxem(40);
+
+    .-col {
+      @include col(12);
+
+      @include mq($from: $breakpoint-small) {
+        @include col(6);
+      }
+
+      @include mq($from: $breakpoint-medium) {
+        @include col(5);
+
+        &:last-of-type {
+          @include offset(1);
+        }
+      }
+    }
+
+    .-title {
+      @include section-bold;
+      margin-bottom: pxem(15);
+    }
+  }
+
+  .-address {
+    margin-bottom: pxem(30);
+
+    span {
+      @include text-large-bold;
+      display: block;
+    }
+  }
+
+  .-email {
+      margin-bottom: pxem(30);
+
+
+    a {
+      @include text-large-bold;
+      text-decoration: none;
+      position: relative;
+      transition: color 240ms $t-1;
+
+      &:after {
+        position: absolute;
+        width: 100%;
+        height: 2px;
+        bottom: 0;
+        left: 0;
+        content: "";
+        background-color: $color-brand-red;
+        transition: background-color 240ms $t-1;
+      }
+
+      &:hover {
+        color: lighten($color-dark-text, 25%);
+
+        &:after {
+          background-color: lighten($color-brand-red, 25%);
+        }
+      }
+    }
+  }
+
+  .-hours-title {
+    @include text-large-bold;
+    margin-bottom: pxem(8);
+  }
+
+  .-hours-item {
+    @include section-bold;
+    text-transform: none;
+
+    @include mq($from: $breakpoint-small) {
+      margin-bottom: pxem(30);
+    }
+  }
+}

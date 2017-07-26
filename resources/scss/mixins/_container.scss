@@ -1,0 +1,17 @@
+@mixin container($type: default) {
+  max-width: pxem(1140);
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  padding-left: pxem(20);
+  padding-right: pxem(20);
+
+  @include mq($from: $breakpoint-small) {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+.container {
+  @include container;
+}

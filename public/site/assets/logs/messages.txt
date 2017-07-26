@@ -1,0 +1,7 @@
+2017-07-08 17:48:57	admin	http://bluegrass.dev/admin/setup/template/removeFields	Deleted field "summary" data in 1 row(s) from 1 page(s). [page-by-page]
+2017-07-08 17:48:57	admin	http://bluegrass.dev/admin/setup/template/removeFields	Deleted field "body" data in 1 row(s) from 1 page(s). [page-by-page]
+2017-07-08 17:48:57	admin	http://bluegrass.dev/admin/setup/template/removeFields	Deleted field "sidebar" data in 1 row(s) from 1 page(s). [page-by-page]
+2017-07-08 17:48:57	admin	http://bluegrass.dev/admin/setup/template/removeFields	Deleted field "images" data in 2 row(s) from 1 page(s). [page-by-page]
+2017-07-08 21:00:14	admin	http://bluegrass.dev/admin/setup/template/removeFields	Deleted field "sidebar" data in 1 row(s) from 1 page(s). [page-by-page]
+2017-07-08 21:00:14	admin	http://bluegrass.dev/admin/setup/template/removeFields	Deleted field "images" data in 1 row(s) from 1 page(s). [page-by-page]
+2017-07-08 21:22:40	admin	http://bluegrass.dev/admin/setup/template/removeFields	Deleted field "body" data in 4 row(s) from 4 page(s). [page-by-page]

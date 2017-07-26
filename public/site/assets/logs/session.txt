@@ -1,0 +1,16 @@
+2017-06-28 02:16:21	admin	http://bluegrass.dev/admin/login/	Successful login for 'admin'
+2017-06-28 15:37:35	guest	http://bluegrass.dev/admin/login/	Error: Failed login for 'malinda' - Unknown user: malinda
+2017-07-06 02:34:48	?	?	User 'admin' - Session timed out (session older than 86400 seconds) (IP: 192.168.33.1)
+2017-07-06 02:34:55	guest	http://bluegrass.dev/admin/login/	Error: Failed login for 'malinda' - Unknown user: malinda
+2017-07-06 02:35:03	guest	http://bluegrass.dev/admin/login/	Error: Failed login for 'malinda' - Unknown user: malinda
+2017-07-06 02:35:14	admin	http://bluegrass.dev/admin/login/	Successful login for 'admin'
+2017-07-08 17:47:42	admin	http://bluegrass.dev/admin/login/	Successful login for 'admin'
+2017-07-08 20:50:31	admin	http://bluegrass.dev/admin/login/?id=1016	Successful login for 'admin'
+2017-07-12 01:55:12	admin	http://bluegrass.dev/admin/login/?id=1001	Successful login for 'admin'
+2017-07-17 18:33:45	admin	http://bluegrass.dev/admin/login/	Successful login for 'admin'
+2017-07-17 23:16:20	admin	http://bluegrass.dev/admin/login/?id=1001	Successful login for 'admin'
+2017-07-18 00:13:38	admin	http://bluegrass.dev/admin/login/?id=44	Successful login for 'admin'
+2017-07-21 02:36:01	admin	http://bluegrass.dev/admin/login/?id=44	Successful login for 'admin'
+2017-07-21 04:00:36	admin	http://bluegrass.dev/admin/login/?id=1016	Successful login for 'admin'
+2017-07-22 17:30:06	admin	http://bluegrass.dev/admin/login/?id=1016	Successful login for 'admin'
+2017-07-26 01:45:29	admin	http://bluegrass.dev/admin/login/site/	Successful login for 'admin'

@@ -1,0 +1,4 @@
+2017-06-28 01:29:07	guest	http://bluegrass.dev/admin/login/	SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'ProcessLogger' for key 'class' (in /wire/core/Modules.php line 1672)
+2017-06-28 01:29:07	guest	http://bluegrass.dev/admin/login/	SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'InputfieldIcon' for key 'class' (in /wire/core/Modules.php line 1672)
+2017-07-08 19:10:27	admin	http://bluegrass.dev/admin/page/edit/?id=1015	Page cannot be its own parent (in /wire/core/Page.php line 1809)
+2017-07-17 18:33:39	guest	http://bluegrass.dev/admin/login/?id=101	This request was aborted because it appears to be forged. (in /wire/core/SessionCSRF.php line 190)

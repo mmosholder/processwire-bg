@@ -1,0 +1,57 @@
+.footer {
+  margin-top: pxem(40);
+
+  .container {
+    padding-top: pxem(30);
+    border-top: 2px solid $color-border;
+  }
+
+  .hours {
+    @include col(12);
+    display: flex;
+    flex-direction: column;
+
+    @include mq($from: $breakpoint-medium) {
+      @include col(5);
+    }
+
+    .-item {
+      margin-bottom: pxem(20);
+
+      .-title {
+        @include text-large-bold;
+        margin-bottom: pxem(5);
+      }
+
+      .-time {
+        @include title-footer;
+      }
+    }
+  }
+
+  .links {
+    @include col(12);
+
+    @include mq($from: $breakpoint-medium) {
+      @include col(4);
+    }
+  }
+
+  .contact {
+    @include col(12);
+
+    @include mq($from: $breakpoint-medium) {
+      @include col(3);
+    }
+
+    .-address {
+      @include footer-links;
+      margin-bottom: pxem(50);
+
+      span {
+        display: block;
+        margin: pxem(4) 0;
+      }
+    }
+  }
+}

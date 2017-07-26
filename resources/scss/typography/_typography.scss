@@ -1,0 +1,92 @@
+@mixin text-paragraph {
+  @include noto;
+  font-weight: regular;
+  font-size: pxem(16);
+}
+
+@mixin general-bold($color) {
+  @include josefin-bold;
+  color: $color;
+  font-size: pxem(20);
+}
+
+@mixin home-title {
+  @include noto;
+  font-weight: 700;
+  font-size: pxem(60);
+  color: $color-white;
+}
+
+@mixin home-sub {
+  @include josefin-bold;
+  font-size: pxem(24);
+  color: $color-white;
+}
+
+@mixin award-bold {
+  @include josefin-bold;
+  color: $color-white;
+  font-size: pxem(30);
+  line-height: pxem(33);
+}
+
+@mixin section-bold {
+  @include josefin-bold;
+  color: $color-dark-text;
+  font-size: pxem(22);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+@mixin semi-bold {
+  @include josefin-semi;
+  font-size: pxem(24);
+  color: $color-white;
+}
+
+@mixin nav-link {
+  @include josefin-regular;
+  font-weight: 700;
+  font-size: pxem(14);
+  text-transform: uppercase;
+  color: $text-dark;
+  text-decoration: none;
+  position: relative;
+
+  @include mq($from: $breakpoint-medium) {
+    font-size: pxem(18);
+  }
+}
+
+@mixin page-title {
+  @include josefin-regular;
+  font-weight: 700;
+  letter-spacing: .5px;
+  color: $text-dark;
+  font-size: pxem(26);
+  text-transform: uppercase;
+}
+
+@mixin text-large-bold {
+  @include noto;
+  font-weight: 700;
+  font-style: regular;
+  font-size: pxem(18);
+  color: $text-dark;
+}
+
+@mixin title-footer {
+  @include josefin-regular;
+  font-weight: 700;
+  font-size: pxem(18);
+  color: $text-dark;
+}
+
+@mixin footer-links {
+  @include josefin-regular;
+  font-weight: 700;
+  font-size: pxem(14);
+  color: $text-dark;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}

@@ -1,0 +1,6 @@
+// This is a helper function to convert pixels
+// into rems so we don't have to change the html font-size.
+
+@function pxem($px) {
+  @return (($px / 16) * 1rem);
+}
