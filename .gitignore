@@ -6,3 +6,4 @@ public/js/app.*
 public/mix-manifest.json
 .env
 .vagrant
+.git
