@@ -1,0 +1,8 @@
+/node_modules
+public/css/app.css
+public/js/app.js
+public/css/app.*
+public/js/app.*
+public/mix-manifest.json
+.env
+.vagrant
