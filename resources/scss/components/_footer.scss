@@ -45,12 +45,12 @@
     }
 
     .-address {
-      @include footer-links;
       margin-bottom: pxem(50);
 
       span {
         display: block;
         margin: pxem(4) 0;
+        @include footer-links;
       }
     }
   }

@@ -5,6 +5,7 @@
   width: 100%;
   padding-left: pxem(20);
   padding-right: pxem(20);
+  position: relative;
 
   @include mq($from: $breakpoint-small) {
     padding-left: 0;

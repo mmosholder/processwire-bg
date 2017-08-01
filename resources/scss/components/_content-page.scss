@@ -40,6 +40,11 @@
     }
   }
 
+  .-full {
+    @include col(12);
+    display: flex;
+  }
+
   .team-item {
     width: 100%;
     display: flex;

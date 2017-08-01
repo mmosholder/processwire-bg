@@ -3,46 +3,30 @@
   position: relative;
 
   @include mq($from: $breakpoint-small) {
-    margin-top: pxem(95);
-    margin-bottom: pxem(50);
+    margin-top: pxem(60);
+    margin-bottom: pxem(30);
+  }
+
+  .-row {
+    justify-content: flex-end;
   }
 
   img {
-    width: pxem(120);
+    width: pxem(95);
     height: auto;
     position: absolute;
-    left: 45%;
-    top: -77px;
-  }
-
-  .row {
-    align-items: center;
+    top: -52px;
+    left: 0px;
   }
 
   ul {
     @include col(12);
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
     border-top: 2px solid $color-border;
     border-bottom: 2px solid $color-border;
     flex-basis: auto;
-
-    &.-left-links {
-      flex-basis: 45%;
-      z-index: 1;
-
-      li:last-of-type {
-        margin-right: 16%;
-      }
-    }
-
-    &.-right-links {
-      flex-basis: 55%;
-
-      li:first-of-type {
-        margin-left: 30%;
-      }
-    }
+    width: 92%;
   }
 
   li {
