@@ -2,7 +2,7 @@
 
 include('./_head.php'); // include header markup ?>
 
-  <div class="home" style="background-image: url('<?php echo $config->urls->templates?>images/home-bg.jpg')">
+  <div class="home" style="background-image: url('<?php echo $config->urls->templates?>images/homepage-bg.jpg')">
   	<div class="container">
       <div class="-row">
         <h1><?=$page->headline?></h1>

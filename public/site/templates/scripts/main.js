@@ -75,7 +75,34 @@ module.exports = __webpack_require__(2);
 /* 1 */
 /***/ (function(module, exports) {
 
+// Nav toggle
+var hamburger = document.querySelector('.hamburger');
+var mobileLinks = document.querySelector('.-links');
+var body = document.querySelector('body');
 
+hamburger.addEventListener('click', function () {
+  hamburger.classList.toggle('is-active');
+  mobileLinks.classList.toggle('-open');
+  body.classList.toggle('nav-open');
+});
+
+// Tabbed Content
+var $tabs = $('.menu-tab');
+var $contentAreas = $('.tabbed-content-view');
+
+$tabs.on('click', function (e) {
+  e.preventDefault();
+
+  $tabs.removeClass('active');
+  $contentAreas.removeClass('show');
+
+  var clickedTab = $(this);
+  var clickedTabId = $(this).attr('id').charAt(0);
+  var activeContent = $('#' + clickedTabId);
+
+  clickedTab.addClass('active');
+  activeContent.addClass('show');
+});
 
 /***/ }),
 /* 2 */

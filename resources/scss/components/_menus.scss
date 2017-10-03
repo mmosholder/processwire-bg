@@ -1,0 +1,38 @@
+.menus {
+
+  .menu-item {
+    @include col(12);
+    margin-bottom: pxem(50);
+
+    @include mq($from: $breakpoint-xsmall) {
+      @include col(6);
+    }
+
+    @include mq($from: $breakpoint-small) {
+      @include col(4);
+    }
+
+    &-image {
+      background-repeat: no-repeat;
+      background-position: center center;
+      width: 100%;
+      height: pxem(250);
+      background-size: cover;
+      margin-bottom: pxem(20);
+    }
+
+    &-title {
+      @include josefin-semi;
+      font-size: pxem(20);
+      color: $color-dark-text;
+      height: pxem(50);
+    }
+
+    &-price {
+      @include josefin-bold;
+      font-size: pxem(16);
+      color: $color-dark-text;
+      margin-bottom: pxem(10);
+    }
+  }
+}

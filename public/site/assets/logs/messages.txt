@@ -5,3 +5,4 @@
 2017-07-08 21:00:14	admin	http://bluegrass.dev/admin/setup/template/removeFields	Deleted field "sidebar" data in 1 row(s) from 1 page(s). [page-by-page]
 2017-07-08 21:00:14	admin	http://bluegrass.dev/admin/setup/template/removeFields	Deleted field "images" data in 1 row(s) from 1 page(s). [page-by-page]
 2017-07-08 21:22:40	admin	http://bluegrass.dev/admin/setup/template/removeFields	Deleted field "body" data in 4 row(s) from 4 page(s). [page-by-page]
+2017-09-25 01:04:10	admin	http://bluegrass.dev/admin/page/sort/	Updated sort for 9 pages

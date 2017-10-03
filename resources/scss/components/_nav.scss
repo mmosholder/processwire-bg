@@ -1,37 +1,108 @@
 .nav {
-  margin-bottom: pxem(35);
+  padding-bottom: pxem(15);
+  padding-top: pxem(15);
   position: relative;
+  width: 100%;
+  z-index: 2;
+  border-bottom: 2px solid $color-brand-red;
 
   @include mq($from: $breakpoint-small) {
-    margin-top: pxem(60);
-    margin-bottom: pxem(30);
+    padding-top: pxem(80);
+    padding-bottom: pxem(30);
+    border-bottom: 0;
   }
 
   .-row {
-    justify-content: flex-end;
+    justify-content: center;
+
+    @include mq($from: $breakpoint-small) {
+      justify-content: flex-end;
+    }
   }
 
-  img {
-    width: pxem(95);
-    height: auto;
+  .-logo {
+    display: none;
+
+    @include mq($from: $breakpoint-small) {
+      display: inline-flex;
+      justify-content: flex-end;
+      width: pxem(95);
+      height: auto;
+      position: absolute;
+      top: -52px;
+      left: 10px;
+      z-index: 1;
+    }
+  }
+
+  .-wordmark {
+    display: inline-flex;
+
+    @include mq($from: $breakpoint-small) {
+      display: none;
+    }
+  }
+
+  .-links {
     position: absolute;
-    top: -52px;
-    left: 0px;
+    top: -20px;
+    left: 100%;
+    height: 101vh;
+    width: 100vw;
+    z-index: -1;
+    transition: left 240ms $t-1;
+    background-color: $color-body-bg;
+    padding-top: pxem(70);
+
+    @include mq($from: $breakpoint-small) {
+      opacity: 1;
+      width: 94%;
+      padding-left: $gutter-width/2;
+      padding-right: $gutter-width/2;
+      position: relative;
+      height: auto;
+      background-color: transparent;
+      top: 0;
+      left: 0;
+      padding-top: 0;
+      z-index: 0;
+    }
   }
 
   ul {
     @include col(12);
     display: flex;
-    justify-content: space-around;
-    border-top: 2px solid $color-border;
-    border-bottom: 2px solid $color-border;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
     flex-basis: auto;
-    width: 92%;
+    border-top: 2px solid $color-brand-red;
+
+    @include mq($from: $breakpoint-small) {
+      justify-content: center;
+      border-top: 2px solid $color-border;
+      border-bottom: 2px solid $color-border;
+      flex-basis: auto;
+      flex-direction: row;
+      width: 98%;
+    }
   }
 
   li {
-    padding: pxem(30) pxem(5) pxem(15) pxem(5);
-    position: relative;
+    display: block;
+    margin: pxem(10) 0;
+    padding: 0 pxem(20);
+
+    @include mq($from: $breakpoint-small) {
+      padding: pxem(25) pxem(20) pxem(15) pxem(20);
+      position: relative;
+      display: inline-flex;
+      margin: 0;
+    }
+
+    @include mq($from: $breakpoint-medium) {
+      padding: pxem(25) pxem(40) pxem(15) pxem(40);
+    }
 
     &:after {
       content: "";
@@ -45,7 +116,8 @@
       transition: opacity 240ms $t-1;
     }
 
-    &:hover {
+    &:hover ,
+    &.current {
       &:after {
         opacity: 1;
       }

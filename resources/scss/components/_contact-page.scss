@@ -12,6 +12,7 @@
 
   .-contact-columns {
     display: flex;
+    flex-wrap: wrap;
     margin-bottom: pxem(40);
 
     .-col {

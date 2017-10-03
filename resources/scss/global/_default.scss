@@ -4,6 +4,21 @@ body,
   margin: 0;
 }
 
+body {
+  overflow-x: hidden;
+  height: 100vh;
+
+  @include mq($from: $breakpoint-small) {
+    height: auto;
+  }
+
+  &.nav-open {
+    overflow-x: hidden;
+    position: fixed;
+    width: 100%;
+  }
+}
+
 ul {
   list-style: none;
   padding: 0;

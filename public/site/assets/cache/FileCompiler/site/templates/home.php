@@ -2,7 +2,7 @@
 
  include(\ProcessWire\wire('files')->compile(\ProcessWire\wire("config")->paths->root . 'site/templates/_head.php',array('includes'=>true,'namespace'=>true,'modules'=>true,'skipIfNamespace'=>true))); // include header markup ?>
 
-  <div class="home" style="background-image: url('<?php echo $config->urls->templates?>images/home-bg.jpg')">
+  <div class="home" style="background-image: url('<?php echo $config->urls->templates?>images/homepage-bg.jpg')">
   	<div class="container">
       <div class="-row">
         <h1><?=$page->headline?></h1>

@@ -1,0 +1,69 @@
+
+{% extends "structure/chrome.html" %}
+{% block content %}
+	<div class="content-page menus">
+
+		<div class="container">
+      <div class="-row">
+        <div id='content' class="content"><h1>{{page.title}}</h1></div>
+      </div>
+    </div>
+
+    {% if page.plain_text %}
+    <div class="container">
+      <div class="-row">
+        <div class="content">
+          <div class="-text -center-align">
+            <p>{{page.plain_text}}</p>
+          </div>
+        </div>
+       </div>
+    </div>
+    {% endif %}
+
+		{% if page.get('full_width_image') %}
+      <div class="container">
+        <div class="-row">
+          <div class="-full-width-image">
+            <img src="{{ page.get('full_width_image').url }}" alt="">
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="container">
+      <div class="-row">
+        <div class="content tabbed">
+          <ul class="tabbed-tabs">
+            {% for menuTab in page.menus_repeater %}
+              <li class="menu-tab {{ menuTab.index < 1 ? 'active' : '' }}" id="{{ loop.index }}tab"><a href="#{{ menuTab.plain_text_title|split(' ')|join()|lower }}">{{ menuTab.plain_text_title }}</a></li>
+            {% endfor %}
+          </ul>
+          <div class="tabbed-content">
+            {% for menuTabContent in page.menus_repeater %}
+              <div class="tabbed-content-view" id="{{ loop.index }}">
+                {% for menuItem in menuTabContent.single_menu_item_repeater %}
+                  <div class="menu-item">
+                    {% if menuItem.get('item_image') %}
+                    <div class="menu-item-image"><img src="{{ menuItem.get('item_image').url }}" alt=""></div>
+                    {% endif %}
+                    {% if menuItem.plain_text_title %}
+                    <div class="menu-item-title">{{ menuItem.plain_text_title }}</div>
+                    {% endif %}
+                    {% if menuItem.second_title %}
+                    <div class="menu-item-price">{{ menuItem.second_title }}</div>
+                    {% endif %}
+                    {% if menuItem.plain_text %}
+                    <div class="menu-item-text"><p>{{ menuItem.plain_text }}</p></div>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+	</div>
+{% endblock %}

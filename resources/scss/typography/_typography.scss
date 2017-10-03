@@ -13,21 +13,36 @@
 @mixin home-title {
   @include noto;
   font-weight: 700;
-  font-size: pxem(60);
+  font-size: pxem(40);
   color: $color-white;
+  line-height: 1;
+
+  @include mq($from: $breakpoint-small) {
+    font-size: pxem(60);
+  }
 }
 
 @mixin home-sub {
   @include josefin-bold;
-  font-size: pxem(24);
+  font-size: pxem(18);
   color: $color-white;
+
+  @include mq($from: $breakpoint-small) {
+    font-size: pxem(24);
+  }
 }
 
 @mixin award-bold {
   @include josefin-bold;
   color: $color-white;
-  font-size: pxem(30);
-  line-height: pxem(33);
+  font-size: pxem(24);
+  line-height: pxem(27);
+
+  @include mq($from: $breakpoint-small) {
+    font-size: pxem(30);
+    line-height: pxem(33);
+
+  }
 }
 
 @mixin section-bold {
@@ -40,8 +55,12 @@
 
 @mixin semi-bold {
   @include josefin-semi;
-  font-size: pxem(24);
+  font-size: pxem(20);
   color: $color-white;
+
+  @include mq($from: $breakpoint-small) {
+    font-size: pxem(24);
+  }
 }
 
 @mixin nav-link {

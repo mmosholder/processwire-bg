@@ -58,10 +58,10 @@ $config->prependTemplateFile = '_init.php';
  * Installer: Database Configuration
  *
  */
-$config->dbHost = '127.0.0.1';
-$config->dbName = 'scotchbox';
-$config->dbUser = 'root';
-$config->dbPass = 'root';
+$config->dbHost = 'mysql.beerandblank.com';
+$config->dbName = 'bluegrass_db';
+$config->dbUser = 'bluegrass_admin';
+$config->dbPass = 'bluegrassadmin';
 $config->dbPort = '3306';
 
 /**
@@ -99,4 +99,4 @@ $config->installed = 1498613253;
  * Installer: HTTP Hosts Whitelist
  *
  */
-$config->httpHosts = array('bluegrass.dev');
+$config->httpHosts = array('*.beerandblank.com, www.staging.beerandblank.com', 'http://www.staging.beerandblank.com');

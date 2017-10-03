@@ -26,6 +26,16 @@ include('./_head.php'); // include header markup ?>
        </div>
     </div>
 
+		<?php if($page->full_width_image): ?>
+      <div class="container">
+        <div class="-row">
+          <div class="-full-width-image">
+            <img src="<?php echo $page->full_width_image->url?>" alt="">
+          </div>
+        </div>
+      </div>
+    <?php endif ?>
+
     <div class="container">
       <div class="row">
         <div class="content">
