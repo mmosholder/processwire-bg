@@ -37,7 +37,7 @@
       display: inline-block;
 
       &.-first {
-        width: pxem(205);
+        width: 25%;
 
         @include mq($to: $breakpoint-small) {
           width: 100%;
@@ -46,8 +46,8 @@
       }
 
       &.-center {
-        width: pxem(230);
-        margin: 0 pxem(95) 0 pxem(60);
+        width: 40%;
+        // margin: 0 pxem(95) 0 pxem(60);
 
         @include mq($to: $breakpoint-small) {
           width: 100%;
@@ -56,7 +56,7 @@
       }
 
       &.-last {
-        width: pxem(160);
+        width: 25%;
 
         @include mq($to: $breakpoint-small) {
           width: 100%;

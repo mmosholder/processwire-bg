@@ -8,7 +8,7 @@
   <link rel="shortcut icon" type="image/x-icon" href="<?php echo $config->urls->templates?>images/favicon.ico" />
   <link rel="stylesheet" type="text/css" href="<?=$recurme->css?>">
 	<link rel="stylesheet" type="text/css" href="<?php echo $config->urls->templates?>styles/main.css" />
-	<script type='text/javascript' src='https://maps.googleapis.com/maps/api/js?key=AIzaSyATHVvqqbz699klt8B_7SKEB2BkyfFd_IE'></script>
+	<script type='text/javascript' src='https://maps.googleapis.com/maps/api/js?key'></script>
   <script src="https://use.fontawesome.com/bcb0ade4ba.js"></script>
 </head>
 <body class='has-sidebar'>
