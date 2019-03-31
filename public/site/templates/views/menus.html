@@ -36,27 +36,37 @@
         <div class="content tabbed">
           <ul class="tabbed-tabs">
             {% for menuTab in page.menus_repeater %}
-              <li class="menu-tab {{ menuTab.index < 1 ? 'active' : '' }}" id="{{ loop.index }}tab"><a href="#{{ menuTab.plain_text_title|split(' ')|join()|lower }}">{{ menuTab.plain_text_title }}</a></li>
+              <li class="menu-tab {{ loop.index == 1 ? 'active' : '' }}" id="{{ loop.index }}tab">{{ menuTab.plain_text_title }}</li>
             {% endfor %}
           </ul>
           <div class="tabbed-content">
             {% for menuTabContent in page.menus_repeater %}
-              <div class="tabbed-content-view" id="{{ loop.index }}">
-                {% for menuItem in menuTabContent.single_menu_item_repeater %}
-                  <div class="menu-item">
-                    {% if menuItem.get('item_image') %}
-                    <div class="menu-item-image"><img src="{{ menuItem.get('item_image').url }}" alt=""></div>
-                    {% endif %}
-                    {% if menuItem.plain_text_title %}
-                    <div class="menu-item-title">{{ menuItem.plain_text_title }}</div>
-                    {% endif %}
-                    {% if menuItem.second_title %}
-                    <div class="menu-item-price">{{ menuItem.second_title }}</div>
-                    {% endif %}
-                    {% if menuItem.plain_text %}
-                    <div class="menu-item-text"><p>{{ menuItem.plain_text }}</p></div>
-                    {% endif %}
+              <div class="tabbed-content-view {{ loop.index == 1 ? 'show' : '' }}" id="{{ loop.index }}">
+                {% for menuSection in menuTabContent.menu_section_repeater %}
+
+                  {% if menuSection.plain_text_title|length %}
+                    <h2>{{ menuSection.plain_text_title }}</h2>
+                  {% endif %}
+                  
+                  <div class="tabbed-content-container">
+                  {% for menuItem in menuSection.single_menu_item_repeater %}
+                    <div class="menu-item">
+                      {% if menuItem.get('images')|length %}
+                      <div class="menu-item-image"><img src="{{ menuItem.get('images').first().url }}" alt=""></div>
+                      {% endif %}
+                      {% if menuItem.plain_text_title %}
+                      <div class="menu-item-title">{{ menuItem.plain_text_title }}</div>
+                      {% endif %}
+                      {% if menuItem.second_title %}
+                      <div class="menu-item-price">{{ menuItem.second_title }}</div>
+                      {% endif %}
+                      {% if menuItem.plain_text %}
+                      <div class="menu-item-text"><p>{{ menuItem.plain_text }}</p></div>
+                      {% endif %}
+                    </div>
+                  {% endfor %}
                   </div>
+
                 {% endfor %}
               </div>
             {% endfor %}

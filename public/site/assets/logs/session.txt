@@ -21,3 +21,27 @@
 2017-09-24 23:34:50	admin	http://bluegrass.dev/admin/login/	Successful login for 'admin'
 2017-09-30 16:06:33	admin	http://bluegrass.dev/admin/login/	Successful login for 'admin'
 2017-10-02 01:27:17	admin	http://bluegrass.dev/admin/login/?id=1014	Successful login for 'admin'
+2017-10-12 17:41:35	admin	http://bluegrass.dev/admin/login/	Successful login for 'admin'
+2017-10-17 00:36:48	admin	http://bluegrass.dev/admin/login/	Successful login for 'admin'
+2017-10-17 01:44:27	?	?	User 'admin' - Error: Session fingerprint changed (IP address or useragent) (IP: 192.168.33.1)
+2017-10-17 02:03:55	admin	http://bluegrass.dev/admin/login/	Successful login for 'admin'
+2017-10-17 14:50:31	admin	http://bluegrass.dev/admin/login/	Successful login for 'admin'
+2017-10-18 00:51:50	admin	http://bluegrass.dev/admin/login/	Successful login for 'admin'
+2017-10-21 17:48:36	admin	http://bluegrass.dev/admin/login/	Successful login for 'admin'
+2017-10-24 00:32:10	admin	http://bluegrass.dev/admin/login/	Successful login for 'admin'
+2017-10-28 16:09:13	admin	http://bluegrass.dev/admin/login/	Successful login for 'admin'
+2017-10-28 17:31:36	?	?	User 'admin' - Error: Session fingerprint changed (IP address or useragent) (IP: 192.168.33.1)
+2017-10-28 17:36:21	admin	http://bluegrass.dev/admin/login/?id=1014	Successful login for 'admin'
+2017-10-28 17:36:58	?	?	User 'admin' - Error: Session fingerprint changed (IP address or useragent) (IP: 192.168.33.1)
+2017-10-28 17:54:32	admin	http://bluegrass.dev/admin/login/	Successful login for 'admin'
+2017-10-28 13:58:46	admin	http://bluegrass.dev/admin/login/?id=47	Successful login for 'admin'
+2017-11-10 14:17:52	admin	http://bluegrass.dev/admin/login/	Successful login for 'admin'
+2017-11-19 12:18:33	?	?	User 'admin' - Session timed out (session older than 86400 seconds) (IP: 192.168.33.1)
+2018-01-28 11:23:41	admin	http://bluegrass.dev/admin/login/	Successful login for 'admin'
+2018-01-28 12:41:34	admin	http://bluegrass.dev/admin/login/	Successful login for 'admin'
+2018-01-28 13:28:18	admin	http://192.168.33.10/admin/login/logout/	Logout for 'admin'
+2018-01-28 13:29:09	admin	http://192.168.33.10/admin/login/	Successful login for 'admin'
+2018-01-28 14:09:30	admin	http://192.168.33.10/admin/login/logout/	Logout for 'admin'
+2018-01-28 14:10:56	admin	http://bluegrass.dev/admin/login/?id=1240	Successful login for 'admin'
+2018-03-09 18:18:39	admin	http://192.168.33.10/admin/login/	Successful login for 'admin'
+2018-03-11 14:25:43	admin	http://192.168.33.10/admin/login/	Successful login for 'admin'

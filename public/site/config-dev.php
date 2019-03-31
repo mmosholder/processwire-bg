@@ -83,7 +83,7 @@ $config->chmodFile = '0644'; // permission for files created by ProcessWire
  * Installer: Time zone setting
  *
  */
-$config->timezone = 'UTC';
+$config->timezone = 'America/Denver';
 
 /**
  * Installer: Unix timestamp of date/time installed
@@ -99,4 +99,4 @@ $config->installed = 1498613253;
  * Installer: HTTP Hosts Whitelist
  *
  */
-$config->httpHosts = array('bluegrass.dev');
+$config->httpHosts = array('bluegrass.dev', '192.168.33.10');

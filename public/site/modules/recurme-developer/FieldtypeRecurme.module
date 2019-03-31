@@ -1,0 +1,86 @@
+<?php namespace ProcessWire;
+
+/**
+ * ProcessWire Recurme Recuring Dates & Calendar Module
+ *
+ * created by Joshua Gatcke
+ * http://www.99lime.com
+ * Copyright 2017 by Joshua Gatcke
+ * 
+ *
+ * Date Format: 02/Sun/Apr/2017
+ * License: see LICENSE.TXT
+ *
+ */
+
+class FieldtypeRecurme extends FieldtypeTextarea {
+
+	public static function getModuleInfo() {
+		return array(
+			'title' 	=> 'Recurme',
+			'version' 	=> 101,
+			'summary' 	=> 'A fieldType that stores rrule recurring event data.',
+			'href' 		=> 'http://99lime.com/modules/recurme/',
+			'icon' 		=> 'calendar', 
+			'installs' 	=> array('MarkupRecurme','InputfieldRecurme','ProcessRecurme'),
+			'requires' 	=> array('MarkupRecurme','InputfieldRecurme','ProcessRecurme')
+			);
+	}
+	
+	public function __construct() {
+		parent::__construct();
+	}
+	
+	public function init() {
+		parent::init();	
+	}
+
+	/**
+	 * Return the default or if not set a blank value
+	 *
+	 */
+	public function getBlankValue(Page $page, Field $field) {
+		return $field->default ? $field->default : '';
+	}
+
+
+	/**
+	 * Return the associated Inputfield
+	 *
+	 */
+	public function getInputfield(Page $page, Field $field) {
+		$inputField = $this->modules->get('InputfieldRecurme');
+		return $inputField;
+	}
+	
+	/**
+	 * sanitize the value - does nothing right now.
+	 */
+	public function sanitizeValue(Page $page, Field $field, $value) {
+		return $value;
+	}
+
+
+	/**
+	 * Return the database schema in specified format
+	 *
+	 */
+	public function getDatabaseSchema(Field $field) {
+		$schema = parent::getDatabaseSchema($field); 
+		$schema['data'] = 'mediumtext NOT NULL';
+		$schema['keys']['data'] = 'FULLTEXT KEY data (data)'; 
+		return $schema;
+	}
+
+	/**
+	 * set the config option fields for this field
+	 *
+	 */
+	public function getConfigInputfields(Field $field) {
+		
+		$inputfields = parent::___getConfigInputfields($field);
+		return $inputfields; 
+		
+	}
+
+}

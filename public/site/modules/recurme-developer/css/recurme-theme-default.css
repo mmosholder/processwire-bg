@@ -1,0 +1,420 @@
+/*
+	Recurme default theme
+	by Joshua Gatcke http://www.99lime.com
+*/
+
+.rm-calendar *,
+.rm-list *{
+font-family:arial, sans-serif;
+}
+
+.rm-calendar [class*='rm-'] *{
+-webkit-box-sizing: border-box;
+-moz-box-sizing: 	border-box;
+box-sizing: 		border-box;
+font-size:12px;
+}
+
+[class*='rm-'] a{
+color:#28abfb !important;
+text-decoration:none !important;
+}
+
+.rm-calendar{
+width:100%;
+margin:2% 0;
+text-align:left;
+position:relative;
+}
+
+.rm-calendar-error:after{
+content:"⚠";
+font-size:14px;
+/*background:#b40000;*/
+background:rgba(0,0,0,0.05);
+color:#b40000;
+line-height:20px;
+display:block;
+height:20px;
+width:20px;
+text-align:center;
+border-radius: 200em;
+position:absolute;
+top:7px;
+right:7px;
+z-index:50;
+}
+
+.rm-calendar table{
+border-spacing:0;
+table-layout: fixed;
+border-collapse: collapse;
+background-clip: padding-box;
+width:100%;
+border:0;
+margin:0;
+}
+
+.rm-calendar h2{
+text-align:center;
+margin:0 0 0 0;
+padding:10px;
+font-weight: normal;
+font-size:1em;
+border:1px solid #ddd;
+text-transform: uppercase;
+color:#888;
+background:rgba(0,0,0,0.02);
+margin-bottom:-1px;
+position:relative;
+}
+
+	/* loading animation */
+	.rm-calendar.rm-loading .rm-month-title{opacity:0;}
+	.rm-calendar .rm-loader{
+		display:none;
+		position:absolute;
+		top:50%;
+		left:50%;
+		transform: translate(-50%,-50%);
+		text-align:center;
+	}
+	.rm-calendar.rm-loading .rm-loader{display:inline-block;}
+	.rm-calendar .rm-loader:before{
+	content:"\2022 \2022 \2022";
+	width:80px;
+	padding-left:10px;
+	display:inline-block;
+	text-align:center;
+	font-size:25px;
+	letter-spacing:0.5em;
+	line-height:1;
+	-webkit-animation: loader 1s infinite;
+	-moz-animation:    loader 1s infinite;
+	-o-animation:      loader 1s infinite;
+	animation:         loader 1s infinite;
+	}
+	
+	@-webkit-keyframes loader {
+	  0%   { opacity: 0; letter-spacing:-1em;}
+	  50%  { }
+	  100% { opacity: 1;color:#28abfb; letter-spacing:0.5em;}
+	}
+
+	.rm-calendar a[class*='rm-arrow-']{
+	display:inline-block;
+	vertical-align: middle;
+	margin:0 10px;
+	line-height:1;
+	margin-top:-0.2em;
+	padding:2px 5px;
+	border:1px solid #ddd;
+	color:#999;
+	border-radius:3px;
+	text-decoration:none;
+	}
+	
+		.rm-calendar a[class*='rm-arrow-']:hover{
+		border:1px solid #ddd;
+		color:#999;
+		background:none;
+		}
+
+.rm-calendar th{
+border:1px solid #ddd;
+vertical-align: middle;
+font-weight:normal;
+background:#efefef;
+text-align:center;
+color:#999 !important;
+font-size:12px;
+padding:5px;
+text-transform: uppercase;
+background-clip: padding-box;
+}
+
+.rm-calendar tr{
+position:relative;
+z-index:10;
+}
+
+	.rm-calendar tr:hover{z-index:20;}
+
+.rm-calendar td{
+vertical-align: top;
+border:1px solid #ddd;
+background:#fff;
+z-index:10;
+outline: none;
+background-clip: padding-box;
+}
+
+	.rm-calendar td:hover{z-index:20;position:relative;}
+	
+	/* extra div to position content */
+	.rm-day-wrap{
+	background:inherit;
+	padding-top:100%;
+	position:relative;
+	}
+		
+	.rm-day-inner{
+	position:absolute;
+	right:0;
+	bottom:0;
+	top:0;
+	left:0;
+	transition: all 0.2s ease;
+	width:100%;
+	max-width:100%;
+	min-height:100%;
+	/*transform: translate(-50%,-50%);*/
+	outline: 1px solid transparent; /*hides strange animation junk pixles*/
+	border:0;
+	-webkit-backface-visibility: hidden;
+	-webkit-font-smoothing: subpixel-antialiased;
+	}
+		/* calendar transition animations - see recurme.js */
+		.rm-day-inner.animateOutBefore{	opacity:1;}
+		.rm-day-inner.animateOut{		opacity:0;}
+		.rm-day-inner.animateInBefore{	opacity:0;}
+		.rm-day-inner.animateIn{		opacity:1;}
+	
+	.rm-day:hover .rm-day-inner{
+	background:inherit;
+	width:200%;
+	top:-20%;
+	right:-20%;
+	bottom:auto;
+	left:-20%;
+	max-width:140%;
+	min-height:140%;
+	border:1px solid #ddd;
+	padding-bottom:1em;
+	backface-visibility: hidden;
+	-webkit-font-smoothing: antialiased;
+	box-shadow:0px 0px 10px rgba(0,0,0,0.1);
+	}
+	
+		.rm-day:hover .rm-calendar-list{position: relative;}
+
+	.rm-day-number{
+	color:#999;
+	display:block;
+	width:100%;
+	text-align:right;
+	font-size:0.9em;
+	position:absolute;
+	top:5px;
+	right:10px;
+	}
+	
+	/* today */
+	.rm-today .rm-day-number:before{
+	content:"";
+	background:red;
+	display:inline-block;
+	vertical-align: middle;
+	width: 7px;
+	height:7px;
+	-moz-border-radius:		10em;
+	-webkit-border-radius:	10em;
+	border-radius:			10em;
+	margin:-2px 3px 0 0;
+	}
+	
+	.rm-calendar td.rm-sun,
+	.rm-calendar td.rm-sat{background:#f9f9f9;background-clip: padding-box;}
+	
+	.rm-calendar-list{
+	position:absolute;
+	top:0;
+	left:0;
+	bottom:0;
+	width:100%;
+	margin:0;
+	padding:1.5em 0 0 0;
+	overflow:hidden;
+	}
+	
+		.rm-calendar-list li{
+		list-style-type:none;
+		margin:2% 2px 0 0;
+		padding:0 10px 0 5px;
+		font-size:0.75em;
+		line-height:1.2;
+		max-width:100%;
+		display:block;
+		white-space: nowrap;
+		overflow:hidden;
+		text-overflow: ellipsis;
+		-o-text-overflow: ellipsis;
+    	-ms-text-overflow: ellipsis;
+		color:#999;
+		}
+		
+		.rm-calendar-list li .rm-date{
+		display:inline-block;
+		text-align:right;
+		vertical-align: bottom;
+		text-transform: uppercase;
+		width:4.5em;
+		font-size:0.9em;
+		}
+		
+.rm-list{
+margin:0;
+padding:0;
+width:100%;
+margin:2% 0;
+}
+
+	/* no events */
+	.rm-list p{font-size:12px;color:#999;padding:10px 20px;font-style:italic;margin:0;}
+
+	.rm-list-month{
+	margin:0;
+	padding:0;
+	}
+	
+		.rm-list-month li{
+		margin:0;
+		padding:0;
+		list-style-type:none;
+		}
+	
+		.rm-list-month h2{
+		margin:0 0 -1px 0;
+		padding:10px 10px;
+		font-weight: normal;
+		font-size:1em;
+		line-height:1;
+		border:1px solid #ddd;
+		text-transform: uppercase;
+		color:#888;
+		background:rgba(0,0,0,0.02);
+		}
+	
+	.rm-list-day{
+	margin:0 0 10px 0;
+	padding:10px;
+	border:1px solid #ddd;
+	}
+	
+		.rm-list-day li{
+		margin:0;
+		padding:0;
+		list-style-type:none;
+		}
+		
+		.rm-list-day h3{
+		line-height:1;
+		color:#999;
+		font-weight: normal;
+		font-size:0.9em;
+		margin:0;
+		padding:0;
+		display:inline-block;
+		vertical-align: middle;
+		width:20%;
+		max-width:100px;
+		text-transform: uppercase;
+		position:relative;
+		top:4px;
+		}
+			.rm-list-day h3 span{display:block;}
+			.rm-date-day{font-size:2.1em;float:left;position:relative;top:-0.1em;margin-right:3px;}
+			.rm-date-month{font-size:0.8em;}
+			.rm-date-year{font-size:0.8em;}
+	
+	.rm-list-events{
+	margin:0;
+	padding:0;
+	display:inline-block;
+	vertical-align:middle;
+	width:79%;
+	}
+	
+		li.rm-list-event{
+		margin:0;
+		padding:2px 0;
+		margin:2px 2px 0 0;
+		padding:0 10px 0 5px;
+		font-size:12px;
+		white-space:nowrap;
+		line-height:1.2;
+		max-width:100%;
+		display:block;
+		white-space: nowrap;
+		overflow:hidden;
+		text-overflow: ellipsis;
+		-o-text-overflow: ellipsis;
+    	-ms-text-overflow: ellipsis;
+		color:#999;
+		}
+		
+		.rm-list-event .rm-event-date{
+		display:inline-block;
+		text-align:right;
+		vertical-align: bottom;
+		text-transform: uppercase;
+		width:4.5em;
+		}
+		
+/* mini calendar - these are just copied styles from responsive */
+.rm-calendar.rm-mini{display: inline-block;width:auto;max-width:400px;min-width:230px;}
+.rm-calendar.rm-mini h2{font-size:12px;}
+.rm-calendar.rm-mini th{font-size:10px;}
+.rm-calendar.rm-mini td:hover{top:1px;}
+.rm-calendar.rm-mini .rm-day-number{font-size:11px;right:5px;top:3px;}
+.rm-calendar.rm-mini .rm-day .rm-day-inner{top:0;left:0;transform: none;padding:0;width:100%;transition: none;}
+.rm-calendar.rm-mini .rm-day:hover .rm-day-inner{width:100%;max-width:none;min-height:100%;box-shadow:none;border:0;top:0;left:0;bottom:0;right:0;}
+.rm-calendar.rm-mini .rm-day-inner.has-events:after{position:absolute;bottom:10%;left:50%;content:"";
+	background:#28abfb;display:inline-block;vertical-align: middle;width: 7px;height:7px;-moz-border-radius:10em;
+	-webkit-border-radius:10em;border-radius:10em;margin:-3px 0 0 -3px;}
+.rm-calendar.rm-mini .rm-calendar-list li{display:none;}	
+.rm-calendar.rm-mini .rm-day:hover .rm-calendar-list{margin-top:-1px;}
+.rm-calendar.rm-mini .rm-day:hover .rm-calendar-list li{display:block;}
+.rm-calendar.rm-mini .rm-day:hover .rm-calendar-list{background:inherit;border:1px solid #ddd;position:absolute;top:100%;left:50%;
+	bottom:auto;width:200px;padding:10px;box-shadow:0px 0px 10px rgba(0,0,0,0.1);overflow:visible;margin-left:-100px;}
+.rm-calendar.rm-mini .rm-day:hover .rm-calendar-list:before{content:"";display:block;width:0;height:0;border-left: 5px solid transparent;
+	border-right: 5px solid transparent;border-bottom: 5px solid #ddd;position:absolute;bottom:100%;left:50%;margin-left:-3px;}
+/*position the outter popovers on the edges*/
+.rm-calendar.rm-mini td.rm-day:first-child:hover .rm-calendar-list{left:-10px;margin-left:0;}
+.rm-calendar.rm-mini td.rm-day:first-child:hover .rm-calendar-list:before{left:35px;}
+.rm-calendar.rm-mini td.rm-day:last-child:hover .rm-calendar-list{left:auto;right:-10px;margin-left:0;}
+.rm-calendar.rm-mini td.rm-day:last-child:hover .rm-calendar-list:before{left:auto;right:35px;}
+.rm-calendar.rm-mini .rm-list-month h2{font-size:12px;}
+.rm-calendar.rm-mini .rm-list-day h3{text-align:center;}
+.rm-calendar.rm-mini .rm-date-day{float:none;margin:0;}
+		
+@media all and (max-width: 800px) {
+	.rm-calendar h2{font-size:12px;}
+	.rm-calendar th{font-size:10px;}
+	.rm-calendar td:hover{top:1px;}
+	.rm-day-number{font-size:11px;right:5px;top:3px;}
+	.rm-day .rm-day-inner{top:0;left:0;transform: none;padding:0;width:100%;transition: none;}
+	.rm-day:hover .rm-day-inner{width:100%;max-width:none;min-height:100%;box-shadow:none;border:0;top:0;left:0;bottom:0;right:0;}
+	.rm-day-inner.has-events:after{position:absolute;bottom:10%;left:50%;content:"";
+		background:#28abfb;display:inline-block;vertical-align: middle;width: 7px;height:7px;-moz-border-radius:10em;
+		-webkit-border-radius:10em;border-radius:10em;margin:-3px 0 0 -3px;}
+	.rm-calendar-list li{display:none;}	
+	.rm-day:hover .rm-calendar-list{margin-top:-1px;}
+	.rm-day:hover .rm-calendar-list li{display:block;}
+	.rm-day:hover .rm-calendar-list{background:inherit;border:1px solid #ddd;position:absolute;top:100%;left:50%;
+		bottom:auto;width:200px;padding:10px;box-shadow:0px 0px 10px rgba(0,0,0,0.1);overflow:visible;margin-left:-100px;}
+	.rm-day:hover .rm-calendar-list:before{content:"";display:block;width:0;height:0;border-left: 5px solid transparent;
+		border-right: 5px solid transparent;border-bottom: 5px solid #ddd;position:absolute;bottom:100%;left:50%;margin-left:-3px;}
+	/*position the outter popovers on the edges*/
+	td.rm-day:first-child:hover .rm-calendar-list{left:-10px;margin-left:0;}
+	td.rm-day:first-child:hover .rm-calendar-list:before{left:35px;}
+	td.rm-day:last-child:hover .rm-calendar-list{left:auto;right:-10px;margin-left:0;}
+	td.rm-day:last-child:hover .rm-calendar-list:before{left:auto;right:35px;}
+	.rm-list-month h2{font-size:12px;}
+	.rm-list-day h3{top:0;}
+}
+
+@media all and (max-width: 350px) {
+	.rm-list-day h3{text-align:center;}
+	.rm-date-day{float:none;margin:0;}
+}

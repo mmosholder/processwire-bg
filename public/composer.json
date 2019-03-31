@@ -14,8 +14,7 @@
   ],
   "require": {
     "php": ">=5.3.8",
-    "ext-gd": "*",
-    "processwire/google-client-api": "^2.0"
+    "ext-gd": "*"
   },
   "autoload": {
     "files": [ "wire/core/ProcessWire.php" ]

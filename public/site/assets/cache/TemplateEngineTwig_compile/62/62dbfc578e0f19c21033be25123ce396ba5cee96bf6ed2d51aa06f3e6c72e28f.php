@@ -101,14 +101,12 @@ class __TwigTemplate_024266b97b12d6a0cb77b9dfa29fe336b570d8d71cb08fa3db6a2cf3c9e
         foreach ($context['_seq'] as $context["_key"] => $context["menuTab"]) {
             // line 39
             echo "              <li class=\"menu-tab ";
-            echo ((($this->getAttribute($context["menuTab"], "index", array()) < 1)) ? ("active") : (""));
+            echo ((($this->getAttribute($context["loop"], "index", array()) == 1)) ? ("active") : (""));
             echo "\" id=\"";
             echo $this->getAttribute($context["loop"], "index", array());
-            echo "tab\"><a href=\"#";
-            echo twig_lower_filter($this->env, twig_join_filter(twig_split_filter($this->env, $this->getAttribute($context["menuTab"], "plain_text_title", array()), " ")));
-            echo "\">";
+            echo "tab\">";
             echo $this->getAttribute($context["menuTab"], "plain_text_title", array());
-            echo "</a></li>
+            echo "</li>
             ";
             ++$context['loop']['index0'];
             ++$context['loop']['index'];
@@ -144,60 +142,89 @@ class __TwigTemplate_024266b97b12d6a0cb77b9dfa29fe336b570d8d71cb08fa3db6a2cf3c9e
         }
         foreach ($context['_seq'] as $context["_key"] => $context["menuTabContent"]) {
             // line 44
-            echo "              <div class=\"tabbed-content-view\" id=\"";
+            echo "              <div class=\"tabbed-content-view ";
+            echo ((($this->getAttribute($context["loop"], "index", array()) == 1)) ? ("show") : (""));
+            echo "\" id=\"";
             echo $this->getAttribute($context["loop"], "index", array());
             echo "\">
                 ";
             // line 45
             $context['_parent'] = $context;
-            $context['_seq'] = twig_ensure_traversable($this->getAttribute($context["menuTabContent"], "single_menu_item_repeater", array()));
-            foreach ($context['_seq'] as $context["_key"] => $context["menuItem"]) {
+            $context['_seq'] = twig_ensure_traversable($this->getAttribute($context["menuTabContent"], "menu_section_repeater", array()));
+            foreach ($context['_seq'] as $context["_key"] => $context["menuSection"]) {
                 // line 46
-                echo "                  <div class=\"menu-item\">
-                    ";
+                echo "
+                  ";
                 // line 47
-                if ($this->getAttribute($context["menuItem"], "get", array(0 => "item_image"), "method")) {
+                if (twig_length_filter($this->env, $this->getAttribute($context["menuSection"], "plain_text_title", array()))) {
                     // line 48
-                    echo "                    <div class=\"menu-item-image\"><img src=\"";
-                    echo $this->getAttribute($this->getAttribute($context["menuItem"], "get", array(0 => "item_image"), "method"), "url", array());
-                    echo "\" alt=\"\"></div>
-                    ";
+                    echo "                    <h2>";
+                    echo $this->getAttribute($context["menuSection"], "plain_text_title", array());
+                    echo "</h2>
+                  ";
                 }
                 // line 50
-                echo "                    ";
-                if ($this->getAttribute($context["menuItem"], "plain_text_title", array())) {
-                    // line 51
-                    echo "                    <div class=\"menu-item-title\">";
-                    echo $this->getAttribute($context["menuItem"], "plain_text_title", array());
-                    echo "</div>
-                    ";
-                }
-                // line 53
-                echo "                    ";
-                if ($this->getAttribute($context["menuItem"], "second_title", array())) {
+                echo "                  
+                  <div class=\"tabbed-content-container\">
+                  ";
+                // line 52
+                $context['_parent'] = $context;
+                $context['_seq'] = twig_ensure_traversable($this->getAttribute($context["menuSection"], "single_menu_item_repeater", array()));
+                foreach ($context['_seq'] as $context["_key"] => $context["menuItem"]) {
+                    // line 53
+                    echo "                    <div class=\"menu-item\">
+                      ";
                     // line 54
-                    echo "                    <div class=\"menu-item-price\">";
-                    echo $this->getAttribute($context["menuItem"], "second_title", array());
-                    echo "</div>
-                    ";
-                }
-                // line 56
-                echo "                    ";
-                if ($this->getAttribute($context["menuItem"], "plain_text", array())) {
+                    if (twig_length_filter($this->env, $this->getAttribute($context["menuItem"], "get", array(0 => "images"), "method"))) {
+                        // line 55
+                        echo "                      <div class=\"menu-item-image\"><img src=\"";
+                        echo $this->getAttribute($this->getAttribute($this->getAttribute($context["menuItem"], "get", array(0 => "images"), "method"), "first", array(), "method"), "url", array());
+                        echo "\" alt=\"\"></div>
+                      ";
+                    }
                     // line 57
-                    echo "                    <div class=\"menu-item-text\"><p>";
-                    echo $this->getAttribute($context["menuItem"], "plain_text", array());
-                    echo "</p></div>
-                    ";
+                    echo "                      ";
+                    if ($this->getAttribute($context["menuItem"], "plain_text_title", array())) {
+                        // line 58
+                        echo "                      <div class=\"menu-item-title\">";
+                        echo $this->getAttribute($context["menuItem"], "plain_text_title", array());
+                        echo "</div>
+                      ";
+                    }
+                    // line 60
+                    echo "                      ";
+                    if ($this->getAttribute($context["menuItem"], "second_title", array())) {
+                        // line 61
+                        echo "                      <div class=\"menu-item-price\">";
+                        echo $this->getAttribute($context["menuItem"], "second_title", array());
+                        echo "</div>
+                      ";
+                    }
+                    // line 63
+                    echo "                      ";
+                    if ($this->getAttribute($context["menuItem"], "plain_text", array())) {
+                        // line 64
+                        echo "                      <div class=\"menu-item-text\"><p>";
+                        echo $this->getAttribute($context["menuItem"], "plain_text", array());
+                        echo "</p></div>
+                      ";
+                    }
+                    // line 66
+                    echo "                    </div>
+                  ";
                 }
-                // line 59
+                $_parent = $context['_parent'];
+                unset($context['_seq'], $context['_iterated'], $context['_key'], $context['menuItem'], $context['_parent'], $context['loop']);
+                $context = array_intersect_key($context, $_parent) + $_parent;
+                // line 68
                 echo "                  </div>
+
                 ";
             }
             $_parent = $context['_parent'];
-            unset($context['_seq'], $context['_iterated'], $context['_key'], $context['menuItem'], $context['_parent'], $context['loop']);
+            unset($context['_seq'], $context['_iterated'], $context['_key'], $context['menuSection'], $context['_parent'], $context['loop']);
             $context = array_intersect_key($context, $_parent) + $_parent;
-            // line 61
+            // line 71
             echo "              </div>
             ";
             ++$context['loop']['index0'];
@@ -212,7 +239,7 @@ class __TwigTemplate_024266b97b12d6a0cb77b9dfa29fe336b570d8d71cb08fa3db6a2cf3c9e
         $_parent = $context['_parent'];
         unset($context['_seq'], $context['_iterated'], $context['_key'], $context['menuTabContent'], $context['_parent'], $context['loop']);
         $context = array_intersect_key($context, $_parent) + $_parent;
-        // line 63
+        // line 73
         echo "          </div>
         </div>
       </div>
@@ -234,7 +261,7 @@ class __TwigTemplate_024266b97b12d6a0cb77b9dfa29fe336b570d8d71cb08fa3db6a2cf3c9e
 
     public function getDebugInfo()
     {
-        return array (  216 => 63,  201 => 61,  194 => 59,  188 => 57,  185 => 56,  179 => 54,  176 => 53,  170 => 51,  167 => 50,  161 => 48,  159 => 47,  156 => 46,  152 => 45,  147 => 44,  130 => 43,  126 => 41,  103 => 39,  86 => 38,  79 => 33,  71 => 28,  66 => 25,  64 => 24,  61 => 23,  52 => 17,  46 => 13,  44 => 12,  37 => 8,  31 => 4,  28 => 3,  11 => 2,);
+        return array (  243 => 73,  228 => 71,  220 => 68,  213 => 66,  207 => 64,  204 => 63,  198 => 61,  195 => 60,  189 => 58,  186 => 57,  180 => 55,  178 => 54,  175 => 53,  171 => 52,  167 => 50,  161 => 48,  159 => 47,  156 => 46,  152 => 45,  145 => 44,  128 => 43,  124 => 41,  103 => 39,  86 => 38,  79 => 33,  71 => 28,  66 => 25,  64 => 24,  61 => 23,  52 => 17,  46 => 13,  44 => 12,  37 => 8,  31 => 4,  28 => 3,  11 => 2,);
     }
 }
 /* */
@@ -275,27 +302,37 @@ class __TwigTemplate_024266b97b12d6a0cb77b9dfa29fe336b570d8d71cb08fa3db6a2cf3c9e
 /*         <div class="content tabbed">*/
 /*           <ul class="tabbed-tabs">*/
 /*             {% for menuTab in page.menus_repeater %}*/
-/*               <li class="menu-tab {{ menuTab.index < 1 ? 'active' : '' }}" id="{{ loop.index }}tab"><a href="#{{ menuTab.plain_text_title|split(' ')|join()|lower }}">{{ menuTab.plain_text_title }}</a></li>*/
+/*               <li class="menu-tab {{ loop.index == 1 ? 'active' : '' }}" id="{{ loop.index }}tab">{{ menuTab.plain_text_title }}</li>*/
 /*             {% endfor %}*/
 /*           </ul>*/
 /*           <div class="tabbed-content">*/
 /*             {% for menuTabContent in page.menus_repeater %}*/
-/*               <div class="tabbed-content-view" id="{{ loop.index }}">*/
-/*                 {% for menuItem in menuTabContent.single_menu_item_repeater %}*/
-/*                   <div class="menu-item">*/
-/*                     {% if menuItem.get('item_image') %}*/
-/*                     <div class="menu-item-image"><img src="{{ menuItem.get('item_image').url }}" alt=""></div>*/
-/*                     {% endif %}*/
-/*                     {% if menuItem.plain_text_title %}*/
-/*                     <div class="menu-item-title">{{ menuItem.plain_text_title }}</div>*/
-/*                     {% endif %}*/
-/*                     {% if menuItem.second_title %}*/
-/*                     <div class="menu-item-price">{{ menuItem.second_title }}</div>*/
-/*                     {% endif %}*/
-/*                     {% if menuItem.plain_text %}*/
-/*                     <div class="menu-item-text"><p>{{ menuItem.plain_text }}</p></div>*/
-/*                     {% endif %}*/
+/*               <div class="tabbed-content-view {{ loop.index == 1 ? 'show' : '' }}" id="{{ loop.index }}">*/
+/*                 {% for menuSection in menuTabContent.menu_section_repeater %}*/
+/* */
+/*                   {% if menuSection.plain_text_title|length %}*/
+/*                     <h2>{{ menuSection.plain_text_title }}</h2>*/
+/*                   {% endif %}*/
+/*                   */
+/*                   <div class="tabbed-content-container">*/
+/*                   {% for menuItem in menuSection.single_menu_item_repeater %}*/
+/*                     <div class="menu-item">*/
+/*                       {% if menuItem.get('images')|length %}*/
+/*                       <div class="menu-item-image"><img src="{{ menuItem.get('images').first().url }}" alt=""></div>*/
+/*                       {% endif %}*/
+/*                       {% if menuItem.plain_text_title %}*/
+/*                       <div class="menu-item-title">{{ menuItem.plain_text_title }}</div>*/
+/*                       {% endif %}*/
+/*                       {% if menuItem.second_title %}*/
+/*                       <div class="menu-item-price">{{ menuItem.second_title }}</div>*/
+/*                       {% endif %}*/
+/*                       {% if menuItem.plain_text %}*/
+/*                       <div class="menu-item-text"><p>{{ menuItem.plain_text }}</p></div>*/
+/*                       {% endif %}*/
+/*                     </div>*/
+/*                   {% endfor %}*/
 /*                   </div>*/
+/* */
 /*                 {% endfor %}*/
 /*               </div>*/
 /*             {% endfor %}*/

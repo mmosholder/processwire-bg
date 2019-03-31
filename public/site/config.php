@@ -38,7 +38,7 @@ if(!defined("PROCESSWIRE")) die();
  * @var bool
  *
  */
-$config->debug = false;
+$config->debug = true;
 
 /**
  * Prepend template file
@@ -58,10 +58,10 @@ $config->prependTemplateFile = '_init.php';
  * Installer: Database Configuration
  *
  */
-$config->dbHost = 'mysql.beerandblank.com';
-$config->dbName = 'bluegrass_db';
-$config->dbUser = 'bluegrass_admin';
-$config->dbPass = 'bluegrassadmin';
+$config->dbHost = 'mysql.thebluegrasslounge.com';
+$config->dbName = 'bluegrass_prod_db';
+$config->dbUser = 'bluegrass_prod';
+$config->dbPass = 'bluegrassprod';
 $config->dbPort = '3306';
 
 /**
@@ -83,7 +83,7 @@ $config->chmodFile = '0644'; // permission for files created by ProcessWire
  * Installer: Time zone setting
  *
  */
-$config->timezone = 'UTC';
+$config->timezone = 'America/Denver';
 
 /**
  * Installer: Unix timestamp of date/time installed
@@ -94,9 +94,8 @@ $config->timezone = 'UTC';
  */
 $config->installed = 1498613253;
 
-
 /**
  * Installer: HTTP Hosts Whitelist
  *
  */
-$config->httpHosts = array('*.beerandblank.com, www.staging.beerandblank.com', 'http://www.staging.beerandblank.com');
+$config->httpHosts = array('*.thebluegrasslounge.com', 'http://www.thebluegrasslounge.com', 'www.thebluegrasslounge.com');

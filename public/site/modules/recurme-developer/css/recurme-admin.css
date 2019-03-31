@@ -1,0 +1,63 @@
+/*
+	Recurme Admin Screen Styles
+	by Joshua Gatcke http://www.99lime.com
+*/
+	
+#content.pw-content{z-index:10;}
+.rm-overview{text-align:center;padding:5% 0;}
+.rm-overview-holder{display:inline-block;width:30%;vertical-align: top;margin:1%;}
+.rm-overview-heading{text-align:left;position:relative;margin:0 auto 5px auto;max-width:400px;
+line-height:1.2;
+overflow:hidden;
+white-space: nowrap;
+padding-right:30px;
+text-overflow: ellipsis;
+-o-text-overflow: ellipsis;
+-ms-text-overflow: ellipsis;
+}
+.rm-overview-heading .rm-actions{position:absolute;right:0;top:0;}
+.rm-overview-heading .rm-actions a{color:#999 !important;padding:2px 5px;}
+.rm-calendar-heading{text-align:left;position: relative;margin-bottom:5px !important;
+margin-right:60px;
+line-height:1.2;
+overflow:hidden;
+white-space: nowrap;
+padding-right:30px;
+text-overflow: ellipsis;
+-o-text-overflow: ellipsis;
+-ms-text-overflow: ellipsis;
+}
+.rm-calendar-heading .rm-actions{position:absolute;right:0;bottom:0;}
+.rm-calendar-heading .rm-actions a{color:#999 !important;padding:2px 5px;}
+.rm-calendar-heading .rm-actions a:hover .fa-trash{color:#ca0000;}
+.rm-actions a:hover{background:none !important;}
+#rm-link-addnew{vertical-align:middle;border:2px dashed #ddd;border-radius:10px;display:inline-block;width:30%;padding-top:28%;margin:1%;position:relative;top:1em;left:0;line-height:1.2;}
+#rm-link-addnew:hover{border-color:#28abfb;}
+#rm-link-addnew span{position:absolute;top:50%;left:50%;transform: translate(-50%,-50%);}
+#rm-link-addnew span i.fa{display:block;font-size:20px !important;}
+.rm-row{display:table;width:100%;table-layout:fixed;border-spacing:0;border-collapse: collapse;}
+.rm-col1{display:table-cell;width:70%;}
+.rm-col1 .rm-calendar{margin:0;}
+.rm-col2{display:table-cell;width:30%;position:relative;}
+.rm-col2 .rm-list{width:auto;margin:0;overflow:scroll;position:absolute;top:0;left:15px;right:0;bottom:0;height:100%;border:1px solid #ddd;}
+.rm-col2 .rm-list .rm-list-day{margin:-1px 0 -1px 0;}
+.rm-col2 .rm-list-month li{margin:0 -1px;}
+.rm-col2 .rm-list-month h2{margin-top:-1px;}
+.rm-col2 .rm-list-day h3{white-space:nowrap;}
+.rm-col2 .rm-date-day{font-size:1.8em;}
+
+@media all and (max-width: 900px) {
+	.rm-overview-holder{width:47%;}
+}
+@media all and (max-width: 800px) {
+	.rm-col2{display:none;}
+	.rm-calendar-heading{font-size:1.2em !important;}
+}
+@media all and (max-width: 600px) {
+	#content .pw-container{padding-left:4%;padding-right:4%;}
+	.rm-overview-holder{width:auto;margin-top:20px;}
+	#rm-link-addnew{width:100%;}
+}
+@media all and (max-width: 350px) {
+	.rm-overview-holder{width:100%;}
+}

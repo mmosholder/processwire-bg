@@ -5,47 +5,73 @@
     list-style: none;
     margin-top: pxem(30);
     display: flex;
-    justify-content: space-between;
-    padding: pxem(20) 0 pxem(10) 0;
+    flex-direction: column;
+
+    @include mq($from: $breakpoint-small) {
+      flex-direction: row;
+      justify-content: space-between;
+      padding: pxem(20) 0 pxem(10) 0;
+    }
 
     li {
       @include text-large-bold;
       font-size: pxem(16);
       position: relative;
-
-      // &:first-of-type {
-      //   padding-left: 0;
-      // }
-      //
-      // &:last-of-type {
-      //   padding-right: 0;
-      // }
+      color: $text-dark;
+      transition: color 240ms $t-1;
+      padding: pxem(10);
+      display: block;     
 
       &:after {
         content: "";
         position: absolute;
-        left: 0;
-        bottom: -10px;
-        height: 2px;
-        width: 100%;
+        left: -5px;
+        bottom: 16px;
+        height: 10px;        
+        width: 10px;
+        border-radius: 50%;
         opacity: 0;
         background-color: $color-brand-red;
         transition: opacity 240ms $t-1;
       }
 
-      a {
-        color: $text-dark;
-        transition: color 240ms $t-1;
-      }
-
       &:hover,
       &.active {
-        a {
-          color: lighten($text-dark, 10%);
-        }
-
+        color: $color-brand-red;
+        
         &:after {
           opacity: 1;
+        }
+      }
+
+      @include mq($from: $breakpoint-small) {
+        padding: 0;
+        display: inline-flex;
+
+        &:after {          
+          content: "";
+          position: absolute;
+          left: 0;
+          bottom: -10px;
+          border-radius: 0;
+          height: 2px;
+          width: 100%;
+          opacity: 0;
+          background-color: $color-brand-red;
+          transition: opacity 240ms $t-1;
+        }
+
+        &:first-of-type {
+          padding-left: 0;
+        } 
+
+        &:hover,
+        &.active {
+          color: lighten($text-dark, 10%);
+
+          &:after {
+            opacity: 1;
+          }
         }
       }
     }
@@ -58,14 +84,26 @@
 
     &-view {
       display: none;
-      flex-wrap: wrap;
       opacity: 0;
       transition: opacity 240ms $t-1;
 
       &.show {
-        display: flex;
+        display: block;
         opacity: 1;
       }
+    }
+
+    h2 {
+      text-transform: uppercase;
+      @include general-bold($color-brand-red);
+      font-size: pxem(16);
+      margin-bottom: pxem(15);
+      @include col(12);
+    }
+
+    &-container {
+      display: flex;
+      flex-wrap: wrap;
     }
   }
 }

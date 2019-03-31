@@ -1,6 +1,6 @@
 <?php
 
- include(\ProcessWire\wire('files')->compile(\ProcessWire\wire("config")->paths->root . 'site/templates/_head.php',array('includes'=>true,'namespace'=>true,'modules'=>true,'skipIfNamespace'=>true))); // include header markup ?>
+include('./_head.php'); // include header markup ?>
 
 	<div class="content-page contact">
 
@@ -49,12 +49,13 @@
               </div>
               <div class="-title">Info</div><?php
                 $info_email = $page->info_email;
-                echo "<div class='-email'><a href='mailto:'" . $info_email . "'>".$info_email."</a></div>";
-               ?>
+                ?>
+                <div class='-email'><a href="mailto:<?php echo $info_email ?>"><?php echo $info_email ?></a></div>
+
               <div class="-title">Music Booking</div><?php
                 $music_email = $page->music_booking_email;
-                echo "<div class='-email'><a href='mailto:'" . $music_email . "'>".$music_email."</a></div>";
-               ?>
+                ?>
+                <div class='-email'><a href="mailto:<?php echo $music_email ?>"><?php echo $music_email ?></a></div>               
              </div>
             <div class="-col">
               <div class="-title">Hours</div>
@@ -80,4 +81,4 @@
 	</div>
 
 
-<?php include(\ProcessWire\wire('files')->compile(\ProcessWire\wire("config")->paths->root . 'site/templates/_foot.php',array('includes'=>true,'namespace'=>true,'modules'=>true,'skipIfNamespace'=>true))); // include footer markup ?>
+<?php include('./_foot.php'); // include footer markup ?>

@@ -1,0 +1,399 @@
+<?php namespace ProcessWire;
+
+/**
+ * ProcessWire Recurme Recuring Dates & Calendar Module
+ *
+ * created by Joshua Gatcke
+ * http://www.99lime.com
+ * Copyright 2017 by Joshua Gatcke
+ * 
+ *
+ * Date Format: 02/Sun/Apr/2017
+ * License: see LICENSE.TXT
+ *
+ */
+
+class InputfieldRecurme extends InputfieldTextarea {
+	
+	// variables
+	public $recurmeID;
+
+	public static function getModuleInfo() {
+		return array(
+			'title' 	=> 'Recurme Inputfield',
+			'version' 	=> 101,
+			'summary' 	=> 'An Easy to use Recurrence interface inputField.',
+			'href' 		=> 'http://www.99lime.com/modules/recurme/',
+			'icon' 		=> 'calendar', 
+			'installs'	=> array("MarkupRecurme","InputfieldRecurme",'ProcessRecurme'),
+			'requires'	=> array("MarkupRecurme","InputfieldRecurme",'ProcessRecurme')
+			);
+	}
+
+	public function __construct() {
+		parent::__construct();
+	}
+
+	/**
+	 * inputfield is loaded
+	 */
+	public function init() {
+		parent::init();
+		
+		// create a fake UID so that we know what interface goes with what data (textarea).
+		// if there are multiple fields. 
+		$this->recurmeID = 'rm-recurme-'.rand(0,5000).time();
+		
+		$conf = $this->getModuleInfo();
+		$version = (int) $conf['version'];
+		
+		// remove the maxlength attribute - man this was hard to find. 
+		$this->removeAttr("maxlength");
+		$this->attr("data-recurme-holder","true");
+		$this->attr('data-recurme-id', $this->recurmeID);
+		$this->attr('data-tz', $this->config->timezone);
+		
+		// processwire datetimepicker scripts
+		$this->config->styles->add( $this->config->urls->modules . "Inputfield/InputfieldDatetime/timepicker/jquery-ui-timepicker-addon.min.css?v={$version}");
+		$this->config->scripts->add($this->config->urls->modules . "Inputfield/InputfieldDatetime/timepicker/jquery-ui-sliderAccess.min.js?v={$version}");
+		$this->config->scripts->add($this->config->urls->modules . "Inputfield/InputfieldDatetime/timepicker/jquery-ui-timepicker-addon.min.js?v={$version}");
+		$this->config->scripts->add($this->config->urls->modules . "Inputfield/InputfieldDatetime/InputfieldDatetime.min.js?v={$version}");
+		
+		// append script needed for the inputfield
+		$this->config->styles->add( $this->config->urls->MarkupRecurme  . "css/recurme-inputfield.css?v={$version}");
+		$this->config->scripts->add($this->config->urls->MarkupRecurme . "js/rrule.js?v={$version}");
+		$this->config->scripts->add($this->config->urls->MarkupRecurme . "js/nlp.js?v={$version}");
+		$this->config->scripts->add($this->config->urls->MarkupRecurme . "js/moment.min.js?v={$version}");
+		$this->config->scripts->add($this->config->urls->MarkupRecurme . "js/moment-timezone-with-data.js?v={$version}");
+		$this->config->scripts->add($this->config->urls->MarkupRecurme . "js/rrule-gui.js?v={$version}");
+	}
+
+	/**
+	 * render the markup for this iputfield
+	 * @return string html markup
+	 */
+	public function ___render() {
+		
+		// random names for radio sets
+		$randRecurName  = rand(200,250).time();
+		$randUntilName  = rand(0,50).time();
+		$randMonthName  = rand(51,100).time();
+		$randYearName   = rand(101,150).time();
+		
+		$out = '<div id="'.$this->recurmeID.'" class="rm-wrap">';
+		
+		if(!wire('recurme')->v){
+			
+			$out .= '<style type="text/css">.rm-notice{background:#fff;border:1px solid red;padding:10px;font-size:12px;line-height:1.2;color:red;margin:10px 0;}</style>';
+			$out .= '<div class="rm-notice"><i class="fa fa-warning"></i> Please provide your License Key here: ';
+			$out .= '<a href="'.wire('config')->urls->admin.'module/edit?name=MarkupRecurme">Recurme Module Settings</a></div>';
+			
+		}
+		
+		$out .= '
+
+    <div name="rrule-gen" id="rrule" class="rrule-gen">
+      
+    <div class="start-date"><label>'.$this->_('Start Date').'
+	<input type="text" class="start-date-field" /></label>
+	<label class="allday-toggle"><input checked="checked" name="allday-toggle" type="checkbox" /> All Day</label>
+	<div class="repeat-toggle"><input type="checkbox" name="toggle" class="toggle" /></div>
+	<input type="hidden" name="start-date-formatted" class="start-date-hidden" value="" />
+	<div class="repeat-rule-text"><i class="fa fa-repeat"></i> '.$this->_('Repeat:').' <span>'.$this->_('Never').'</span></div>
+    </div>	  			
+      
+    <div class="section hide recurring-toggle">Recurring Event?
+	<input type="radio" data-name="event-recurring" name="event-recurring'.$randRecurName.'" value="no" checked="checked" /> No
+	<input type="radio" data-name="event-recurring" name="event-recurring'.$randRecurName.'" value="yes" /> Yes
+    </div>
+      
+    <!-- RECURRING RULES -->
+    <div id="recurring-rules">
+
+	<!-- FREQ -->
+	<div class="section freq-choice">
+	  '.$this->_('Every').' <input type="number" min="1" name="interval" value="1" /> 
+	  <select name="freq">
+	    <option value="daily" class="days">'.$this->_('Day(s)').'</option>
+	    <option value="weekly" class="weeks">'.$this->_('Week(s)').'</option>
+	    <option value="monthly" class="months">'.$this->_('Month(s)').'</option>
+	    <option value="yearly" class="years">'.$this->_('Year(s)').'</option>
+	  </select>
+	  <span class="freq-selection">'.$this->_('Day(s)').'</span>
+	</div>
+
+	<!-- BYWEEKDAY -->
+	<div id="weekday-select" class="section hide weeks-choice">
+	  <div class="weekday-select btn-group">
+	    <button class="btn btn-default" data-value="SU">'.$this->_('Sun').'</button>
+	    <button class="btn btn-default" data-value="MO">'.$this->_('Mon').'</button>
+	    <button class="btn btn-default" data-value="TU">'.$this->_('Tue').'</button>
+	    <button class="btn btn-default" data-value="WE">'.$this->_('Wed').'</button>
+	    <button class="btn btn-default" data-value="TH">'.$this->_('Thu').'</button>
+	    <button class="btn btn-default" data-value="FR">'.$this->_('Fri').'</button>
+	    <button class="btn btn-default" data-value="SA">'.$this->_('Sat').'</button>
+	  </div>
+	</div>
+
+	<!-- BYYEAR -->
+	<div id="bymonth-select" class="section hide btn-toolbar years-choice" role="toolbar">
+	  <div class="box-row">
+	    <div class="box">
+	      <label><input type="radio" data-name="yearly-options" name="yearly-options'.$randYearName.'" id="yearly-one-month" checked="checked" /> '.$this->_('Day').'</label>
+	      <div class="inner">
+		<select name="yearly-bymonth" id="yearly-bymonth" class="yearly-one-month">
+		  <option value="1" selected="yes">'.$this->_('January').'</option>
+		  <option value="2">'.$this->_('February').'</option>
+		  <option value="3">'.$this->_('March').'</option>
+		  <option value="4">'.$this->_('April').'</option>
+		  <option value="5">'.$this->_('May').'</option>
+		  <option value="6">'.$this->_('June').'</option>
+		  <option value="7">'.$this->_('July').'</option>
+		  <option value="8">'.$this->_('August').'</option>
+		  <option value="9">'.$this->_('September').'</option>
+		  <option value="10">'.$this->_('October').'</option>
+		  <option value="11">'.$this->_('November').'</option>
+		  <option value="12">'.$this->_('December').'</option>
+		</select>
+
+		<select name="yearly-bymonthday" id="yearly-bymonthday" class="yearly-one-month">
+		  <option value="1" selected="yes">1</option>
+		  <option value="2">2</option>
+		  <option value="3">3</option>
+		  <option value="4">4</option>
+		  <option value="5">5</option>
+		  <option value="6">6</option>
+		  <option value="7">7</option>
+		  <option value="8">8</option>
+		  <option value="9">9</option>
+		  <option value="10">10</option>
+		  <option value="11">11</option>
+		  <option value="12">12</option>
+		  <option value="13">13</option>
+		  <option value="14">14</option>
+		  <option value="15">15</option>
+		  <option value="16">16</option>
+		  <option value="17">17</option>
+		  <option value="18">18</option>
+		  <option value="19">19</option>
+		  <option value="20">20</option>
+		  <option value="21">21</option>
+		  <option value="22">22</option>
+		  <option value="23">23</option>
+		  <option value="24">24</option>
+		  <option value="25">25</option>
+		  <option value="26">26</option>
+		  <option value="27">27</option>
+		  <option value="28">28</option>
+		  <option value="29">29</option>
+		  <option value="30">30</option>
+		  <option value="31">31</option>
+		</select>
+	    </div></div>
+	      
+	      <div class="box">
+		<label><input type="radio" data-name="yearly-options" name="yearly-options'.$randYearName.'" id="yearly-multiple-months" /> '.$this->_('Months').'</label>
+		<div class="inner">
+		  <div class="btn-group yearly-multiple-months">
+		    <button class="btn btn-default" data-month-num="1" disabled="disabled">'.$this->_('Jan').'</button>
+		    <button class="btn btn-default" data-month-num="2" disabled="disabled">'.$this->_('Feb').'</button>
+		    <button class="btn btn-default" data-month-num="3" disabled="disabled">'.$this->_('Mar').'</button>
+		    <button class="btn btn-default" data-month-num="4" disabled="disabled">'.$this->_('Apr').'</button>
+		  </div>
+		  <div class="btn-group yearly-multiple-months">
+		    <button class="btn btn-default" data-month-num="5" disabled="disabled">'.$this->_('May').'</button>
+		    <button class="btn btn-default" data-month-num="6" disabled="disabled">'.$this->_('Jun').'</button>
+		    <button class="btn btn-default" data-month-num="7" disabled="disabled">'.$this->_('Jul').'</button>
+		    <button class="btn btn-default" data-month-num="8" disabled="disabled">'.$this->_('Aug').'</button>
+		  </div>
+		  <div class="btn-group yearly-multiple-months">
+		    <button class="btn btn-default" data-month-num="9" disabled="disabled">'.$this->_('Sep').'</button>
+		    <button class="btn btn-default" data-month-num="10" disabled="disabled">'.$this->_('Oct').'</button>
+		    <button class="btn btn-default" data-month-num="11" disabled="disabled">'.$this->_('Nov').'</button>
+		    <button class="btn btn-default" data-month-num="12" disabled="disabled">'.$this->_('Dec').'</button>
+		  </div>
+		</div></div>
+
+		<div class="box">
+		  <label><input type="radio" data-name="yearly-options" name="yearly-options'.$randYearName.'" id="yearly-precise" /> '.$this->_('On the&hellip;').' </label>
+		  <div class="inner">
+		    <select name="yearly-bysetpos" class="yearly-precise" disabled="disabled">
+		      <option value="1" selected="selected">'.$this->_('First').'</option>
+		      <option value="2">'.$this->_('Second').'</option>
+		      <option value="3">'.$this->_('Third').'</option>
+		      <option value="4">'.$this->_('Fourth').'</option>
+		      <option value="-1">'.$this->_('Last').'</option>
+		    </select>
+		    <select name="yearly-byday" class="yearly-precise" disabled="disabled">
+		      <option value="SU" selected="selected">'.$this->_('Sunday').'</option>
+		      <option value="MO">'.$this->_('Monday').'</option>
+		      <option value="TU">'.$this->_('Tuesday').'</option>
+		      <option value="WE">'.$this->_('Wednesday').'</option>
+		      <option value="TH">'.$this->_('Thursday').'</option>
+		      <option value="FR">'.$this->_('Friday').'</option>
+		      <option value="SA">'.$this->_('Saturday').'</option>
+		      <option value="SU,MO,TU,WE,TH,FR,SA" selected="selected">'.$this->_('All days').'</option>
+		      <option value="MO,TU,WE,TH,FR">'.$this->_('Weekday').'</option>
+		      <option value="SU,SA">'.$this->_('Weekend days').'</option>
+		    </select>
+		    <select name="yearly-bymonth-with-bysetpos-byday"  id="yearly-bymonth-with-bysetpos-byday" class="yearly-precise" disabled="disabled">
+		      <option value="1" selected="selected">'.$this->_('of January').'</option>
+		      <option value="2">'.$this->_('of February').'</option>
+		      <option value="3">'.$this->_('of March').'</option>
+		      <option value="4">'.$this->_('of April').'</option>
+		      <option value="5">'.$this->_('of May').'</option>
+		      <option value="6">'.$this->_('of June').'</option>
+		      <option value="7">'.$this->_('of July').'</option>
+		      <option value="8">'.$this->_('of August').'</option>
+		      <option value="9">'.$this->_('of September').'</option>
+		      <option value="10">'.$this->_('of October').'</option>
+		      <option value="11">'.$this->_('of November').'</option>
+		      <option value="12">'.$this->_('of December').'</option>
+		    </select>
+		  </div>
+		</div></div>
+	</div>
+
+	<!-- BYMONTHDAY -->   
+	<div id="monthday-select" class="section hide months-choice">
+	  <div class="box-row">
+	    <div class="box"><label>
+	      <input type="radio" data-name="monthday-pos-select" name="monthday-pos-select'.$randMonthName.'" value="monthday-selected" id="monthday-selected" checked="checked" />
+	      '.$this->_('Number').'</label>
+	      
+	      <div class="monthday-select inner">
+		<div class="btn-group"> 
+		  <button class="btn btn-default" data-day-num="1">1</button>
+		  <button class="btn btn-default" data-day-num="2">2</button>
+		  <button class="btn btn-default" data-day-num="3">3</button>
+		  <button class="btn btn-default" data-day-num="4">4</button>
+		  <button class="btn btn-default" data-day-num="5">5</button>
+		  <button class="btn btn-default" data-day-num="6">6</button>
+		  <button class="btn btn-default" data-day-num="7">7</button>
+		</div>
+		<div class="btn-group">
+		  <button class="btn btn-default" data-day-num="8">8</button>
+		  <button class="btn btn-default" data-day-num="9">9</button>
+		  <button class="btn btn-default" data-day-num="10">10</button>
+		  <button class="btn btn-default" data-day-num="11">11</button>
+		  <button class="btn btn-default" data-day-num="12">12</button>
+		  <button class="btn btn-default" data-day-num="13">13</button>
+		  <button class="btn btn-default" data-day-num="14">14</button>
+		</div>
+		<div class="btn-group">
+		  <button class="btn btn-default" data-day-num="15">15</button>
+		  <button class="btn btn-default" data-day-num="16">16</button>
+		  <button class="btn btn-default" data-day-num="17">17</button>
+		  <button class="btn btn-default" data-day-num="18">18</button>
+		  <button class="btn btn-default" data-day-num="19">19</button>
+		  <button class="btn btn-default" data-day-num="20">20</button>
+		  <button class="btn btn-default" data-day-num="21">21</button>
+		</div>
+		<div class="btn-group">
+		  <button class="btn btn-default" data-day-num="22">22</button>
+		  <button class="btn btn-default" data-day-num="23">23</button>
+		  <button class="btn btn-default" data-day-num="24">24</button>
+		  <button class="btn btn-default" data-day-num="25">25</button>
+		  <button class="btn btn-default" data-day-num="26">26</button>
+		  <button class="btn btn-default" data-day-num="27">27</button>
+		  <button class="btn btn-default" data-day-num="28">28</button>
+		</div>
+		<div class="btn-group">
+		  <button class="btn btn-default" data-day-num="29">29</button>
+		  <button class="btn btn-default" data-day-num="30">30</button>
+		  <button class="btn btn-default" data-day-num="31">31</button>
+		</div>
+	      </div>
+	    </div>
+
+	    <!-- BYDAY -->  
+	    <div class="box"><label>
+	      <input type="radio" data-name="monthday-pos-select" name="monthday-pos-select'.$randMonthName.'" value="month-byday-pos-selected" id="month-byday-pos-selected" /> '.$this->_('on the&hellip;').' </label>
+	      <div class="inner">  
+		<select name="month-byday-pos" disabled="yes">
+		  <option value="1" selected="selected">'.$this->_('First').'</option>
+		  <option value="2">'.$this->_('Second').'</option>
+		  <option value="3">'.$this->_('Third').'</option>
+		  <option value="4">'.$this->_('Fourth').'</option>
+		  <option value="-1">'.$this->_('Last').'</option>
+		</select>
+		<select name="month-byday-pos-name" disabled="yes">
+		  <option value="SU" selected="selected">'.$this->_('Sunday').'</option>
+	      <option value="MO">'.$this->_('Monday').'</option>
+	      <option value="TU">'.$this->_('Tuesday').'</option>
+	      <option value="WE">'.$this->_('Wednesday').'</option>
+	      <option value="TH">'.$this->_('Thursday').'</option>
+	      <option value="FR">'.$this->_('Friday').'</option>
+	      <option value="SA">'.$this->_('Saturday').'</option>
+	      <option value="SU,MO,TU,WE,TH,FR,SA" selected="selected">'.$this->_('All days').'</option>
+	      <option value="MO,TU,WE,TH,FR">'.$this->_('Weekday').'</option>
+	      <option value="SU,SA">'.$this->_('Weekend days').'</option>
+		</select>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+
+	<!-- UNTIL -->
+	<div id="until-rules" class="section hide until-rules">
+	  <div class="box-row">
+	    <div class="label">'.$this->_('End').'</div>
+	    <div class="box">
+	      <label><input type="radio" data-name="end-select" name="end-select'.$randUntilName.'" value="never" id="never-select" checked="checked"/> '.$this->_('Never').'</label>
+	    </div>
+	    <div class="box">
+	      <label><input type="radio" data-name="end-select" name="end-select'.$randUntilName.'" value="count" id="count-select"/> '.$this->_('After').' 
+		<input autocomplete="off" type="number" name="count" min="1" value="1" step="1"/> '.$this->_('Time(s)').'</label>
+	    </div>
+	    <div class="box">
+	      <label><input type="radio" data-name="end-select" name="end-select'.$randUntilName.'" value="until" id="until-select" />
+		'.$this->_('On').' <input type="text" name="until" class="end-date" disabled="yes" />
+		<input type="hidden" name="end-date-formatted" class="end-date-hidden" value="" /></label>
+	    </div>
+	  </div>
+	</div>
+	
+	<!-- RESULTS -->	
+	<div id="repeat-results">
+	  <div class="head">
+	    <span class="count">0</span> '.$this->_('Results').' 
+	    <a href="#" class="excluded"></a>
+	    <a class="control" id="action-code" href="#" title="'.$this->_('RRule: none.').'"><i class="fa fa-code"></i></a>
+	    <a class="control" id="action-collapse" href="#" title="'.$this->_('Results Table').'"><i class="fa fa-table"></i></a>
+	  </div>
+	  <div class="inner">
+	    <table cellpadding="0" cellspacing="0">
+	      <tbody>
+	      </tbody>
+	    </table>
+	  </div>
+	</div>
+	
+      </div><!-- end .recurring-rules -->
+    </div><!-- end #rrule -->
+    
+    <textarea '. $this->getAttributesString() .'>'.$this->value.'</textarea>
+    
+	<!-- End Recurrence Form -->
+	</div><!-- end .wrap -->';
+
+		return $out;
+	}
+	
+	public function getConfigInputfields(){
+		
+		$inputfields = parent::___getConfigInputfields();
+		
+		// remove some fields
+		$inputfields->remove($inputfields->get('textformatters'));
+		$inputfields->remove($inputfields->get('striptags'));
+		$inputfields->remove($inputfields->get('rows'));
+		$inputfields->remove($inputfields->get('minlength'));
+		$inputfields->remove($inputfields->get('maxlength'));
+		$inputfields->remove($inputfields->get('placeholder'));
+		
+		return $inputfields;
+		
+	}
+
+}

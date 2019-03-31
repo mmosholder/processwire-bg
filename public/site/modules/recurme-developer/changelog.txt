@@ -1,0 +1,16 @@
+# Change Log
+Recurme - http://www.99lime.com/modules/recurme/
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](http://keepachangelog.com/)
+and this project adheres to [Semantic Versioning](http://semver.org/).
+
+
+## [1.0.1] - 2017-05-29
+### changed
+- Fixed $options[weekStartDay] offset in Calendar
+- Fixed ->renderCalendar() Blank Days
+- Fixed missing ->renderList() [renderMonth][xAfter]
+- Removed ->renderCalendar() <table> attributes border, border-spacing
+- Fixed ->renderCalendar() excluded dates
+- Fixed rrule-giu.js exclude dates

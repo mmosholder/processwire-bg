@@ -3,10 +3,13 @@
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title><?php echo $page->title; ?></title>
+	<title>The Bluegrass Lounge | <?php echo $page->title; ?></title>
 	<meta name="description" content="<?php echo $page->summary; ?>" />
+  <link rel="shortcut icon" type="image/x-icon" href="<?php echo $config->urls->templates?>images/favicon.ico" />
+  <link rel="stylesheet" type="text/css" href="<?=$recurme->css?>">
 	<link rel="stylesheet" type="text/css" href="<?php echo $config->urls->templates?>styles/main.css" />
 	<script type='text/javascript' src='https://maps.googleapis.com/maps/api/js?key=AIzaSyATHVvqqbz699klt8B_7SKEB2BkyfFd_IE'></script>
+  <script src="https://use.fontawesome.com/bcb0ade4ba.js"></script>
 </head>
 <body class='has-sidebar'>
 

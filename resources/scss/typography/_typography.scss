@@ -48,9 +48,13 @@
 @mixin section-bold {
   @include josefin-bold;
   color: $color-dark-text;
-  font-size: pxem(22);
+  font-size: pxem(18);
   text-transform: uppercase;
   letter-spacing: 1px;
+
+  @include mq($from: $breakpoint-small) {
+    font-size: pxem(22);
+  }
 }
 
 @mixin semi-bold {
@@ -82,23 +86,34 @@
   font-weight: 700;
   letter-spacing: .5px;
   color: $text-dark;
-  font-size: pxem(26);
+  font-size: pxem(20);
   text-transform: uppercase;
+
+  @include mq($from: $breakpoint-small) {
+    font-size: pxem(26);
+  } 
 }
 
 @mixin text-large-bold {
   @include noto;
   font-weight: 700;
   font-style: regular;
-  font-size: pxem(18);
   color: $text-dark;
+
+  @include mq($from: $breakpoint-small) {
+    font-size: pxem(14);
+  }  
 }
 
 @mixin title-footer {
   @include josefin-regular;
   font-weight: 700;
-  font-size: pxem(18);
+  font-size: pxem(16);
   color: $text-dark;
+
+  @include mq($from: $breakpoint-small) {
+    font-size: pxem(18);
+  }
 }
 
 @mixin footer-links {

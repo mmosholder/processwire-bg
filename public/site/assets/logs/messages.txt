@@ -6,3 +6,9 @@
 2017-07-08 21:00:14	admin	http://bluegrass.dev/admin/setup/template/removeFields	Deleted field "images" data in 1 row(s) from 1 page(s). [page-by-page]
 2017-07-08 21:22:40	admin	http://bluegrass.dev/admin/setup/template/removeFields	Deleted field "body" data in 4 row(s) from 4 page(s). [page-by-page]
 2017-09-25 01:04:10	admin	http://bluegrass.dev/admin/page/sort/	Updated sort for 9 pages
+2017-10-21 18:02:13	admin	http://bluegrass.dev/admin/setup/field/save	Deleted field "plain_text_title" data in 0 row(s) from 0 page(s). [page-by-page]
+2017-10-21 18:02:13	admin	http://bluegrass.dev/admin/setup/field/save	Deleted field "body" data in 0 row(s) from 0 page(s). [page-by-page]
+2017-10-28 16:20:04	admin	http://bluegrass.dev/admin/setup/field/save	Deleted field "second_title" data in 1 row(s) from 1 page(s). [page-by-page]
+2017-10-28 16:21:34	admin	http://bluegrass.dev/admin/setup/field/send-templates-save?id=114	Deleted field "menu_section_repeater" data in 0 row(s) from 0 page(s). [page-by-page]
+2017-10-28 18:34:54	admin	http://bluegrass.dev/admin/setup/template/removeFields	Deleted field "new_event" data in 1 row(s) from 1 page(s). [page-by-page]
+2017-10-28 18:36:17	admin	http://bluegrass.dev/admin/setup/template/removeFields	Deleted field "events_repeater" data in 1 row(s) from 1 page(s). [page-by-page]

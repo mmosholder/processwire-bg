@@ -1,6 +1,6 @@
 .contact {
   .-center-align {
-    @include col(12);
+    @include span(12);
     margin-bottom: pxem(30);
 
     @include mq($from: $breakpoint-small) {
@@ -16,7 +16,7 @@
     margin-bottom: pxem(40);
 
     .-col {
-      @include col(12);
+      @include span(12);
 
       @include mq($from: $breakpoint-small) {
         @include col(6);

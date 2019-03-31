@@ -1,0 +1,1397 @@
+<?php namespace ProcessWire;
+
+/**
+ * ProcessWire Recurme Recuring Dates & Calendar Module
+ *
+ * created by Joshua Gatcke
+ * http://www.99lime.com
+ * Copyright 2017 by Joshua Gatcke
+ * 
+ *
+ * Date Format: 02/Sun/Apr/2017
+ * License: see LICENSE.TXT
+ *
+ */
+
+class MarkupRecurme extends WireData implements Module, ConfigurableModule{
+	
+	public static $today;
+	public static $currentMonth;
+	public static $currentMonthString;
+	public static $monthStart;
+	public static $monthEnd;
+	public static $v;
+	public static $recurFields = array();
+	public static $keylen;
+	public static $software;
+	public $debug = false;
+	public $css;
+	public $js;
+	
+	
+	// internal variables
+	private static $selector;
+	private static $debugScriptLoaded = 0;
+	
+	// holder variables
+	public static $day;
+	public static $week;
+	public static $month;
+	
+	// setting variables
+	public static $validate_email;
+	public static $validate_key;
+	
+	// ID count holder
+	private static $calendarIdCount = 0;
+	private static $listIdCount 	= 0;
+	
+	
+	public static function getModuleInfo() {
+		return array(
+			'title' 	=> 'Recurme Markup',
+			'version' 	=> 101, 
+			'singular'	=> true,
+			'autoload'	=> true,
+			'summary' 	=> 'An Easy way to find and display recurring event data & generate calendars, list, and custom views in your templates.',
+			'href' 		=> 'http://99lime.com/modules/recurme/',
+			'icon' 		=> 'calendar', 
+			'installs' 	=> array('FieldtypeRecurme','InputfieldRecurme','ProcessRecurme'),
+			'requires' 	=> array('FieldtypeRecurme','InputfieldRecurme','ProcessRecurme')
+			);
+	}
+	
+	public function __construct() {
+		parent::__construct();
+	}
+	
+	public function init(){
+	
+		$this->today 				= time();
+		$this->currentMonth 		= date('m', $this->today);
+		$this->currentMonthString 	= date('M/Y', $this->today);
+		$this->monthStart 			= strtotime(date('Y-m-01',$this->today));
+		$this->monthEnd 			= strtotime(date('Y-m-t',$this->today));
+		$this->css					= $this->config->urls->MarkupRecurme.'css/recurme-theme-default.css';
+		$this->js 					= $this->config->urls->MarkupRecurme.'js/recurme.js';
+		
+		// set up license check variables
+		$this->keylen 		= 16;
+		$this->software 	= 'Recurme';
+		
+		$this->setRecurFields();
+		$this->codeValidate($this->validate_key, $this->validate_email);
+		
+		// event getDates
+		$this->addHook('Page::getDates', $this, 'getDates');
+		
+		Wire::setFuel('recurme', $this);
+	}
+		
+	/**
+	*
+	*   Get The fields that are of type FieldTypeRecur to search.
+	*
+	*/
+	public function ___setRecurFields(){
+		$recurFields = array();
+		
+		foreach(wire('fields') as $field){
+			
+			if($field->type == 'FieldtypeRecurme'){
+				$recurFields[] = $field->name;
+			}
+			
+		}
+		
+		$this->recurFields = $recurFields;
+	}
+	
+	/**
+	*
+	*   Selector formatting
+	*
+	*/
+	public function ___createSelector($selector = ''){
+		
+		$s = '';
+		
+		foreach($this->recurFields as $key => $field){
+			$s .= $field;
+			if($key != count($this->recurFields)-1){ $s .= '|'; }
+		}
+		
+		return $s.$selector;
+		
+	}
+	
+	/**
+	*
+	*   Check & Format the date
+	*	Accepts strings and timestamps
+	*	Returns our custom date format
+	*	02/Sun/Apr/2017
+	*	or defaults to unix timestamp
+	*
+	*/
+	public function ___formatDate($date = '', $format = 'U'){
+		
+		// default to time()
+		if(!$date){ $date = time(); }
+		
+		set_error_handler(function() { /* ignoring e_warning on date fail */ });
+		if(date('U',$date)){ $date = $date; }
+		else if(strtotime($date)){ $date = strtotime($date); }
+		else{ restore_error_handler(); return false; }
+		
+		return date($format, $date);
+	}
+	
+	
+	/**
+	*
+	*   Find Method
+	*
+	*/
+	public function ___find($startDate = false, $endDate = false, $pwSelector = false){
+		
+		// check the date
+		$startDate 	= $this->formatDate($startDate);
+		$endDate	= $this->formatDate($endDate);
+		
+		// if there is no startDate or endDate, default to today
+		if(!$startDate){ $startDate = strtotime(date("Y-m-d 00:00:01", time())); }
+		if(!$endDate){   $endDate 	= strtotime(date("Y-m-d 23:59:59", time())); }
+		
+		$startDate 	= strtotime(date("Y-m-d 00:00:01", $startDate)); // begining of day
+		$endDate 	= strtotime(date("Y-m-d 23:59:59", $endDate)); 	 // end of day
+		
+		// $selector
+		$selector = "~=".date('M/Y', $startDate);
+		
+		// loop over months
+		$monthCounter = $startDate;
+		while($monthCounter < $endDate){
+			
+			$selector .= "|".date('M/Y', $monthCounter);
+			
+			// advance by one month
+			$monthCounter = strtotime('+1 month', $monthCounter);
+		}
+		
+		$selector = $this->createSelector($selector);
+		
+		// append user selector string
+		if($pwSelector){ $selector .= ','.$pwSelector; } 
+		if(!$selector){ return new PageArray(); }
+		
+		$events 	= wire('pages')->find($selector);
+		$events 	= $this->processEvents($events, $startDate, $endDate);
+		
+		return $events; 
+	}
+	
+	/**
+	*	
+	*	getEvent - just a mask for processEvent with Singular return;
+	*	Hookable
+	*	
+	*/
+	public function ___event($event){
+		$page 	= new Page();
+		$events = new PageArray();
+		
+		if($event instanceof Page){
+			$event = $event;
+		}else{
+			$event = wire('pages')->get($event);
+		}
+		
+		if($event->id){
+			$events->import($event);
+			$event = $this->processEvents($events);
+			if(count($event)){ $event = $event->first(); }
+			return $event;
+		}
+		
+		return $page;
+		
+	}
+	
+	/**
+	*	
+	*	HOOK - $event->original->getDates();
+	*	getDates - get the array of dates on the $event/Page object
+	*	This is a hook on all $event objects. 
+	*	
+	*/
+	public function ___getDates($e){
+		// check if it has a recurmeInputfield
+		$field = false;
+		foreach($this->recurFields as $f){
+			if($e->object->template->hasField($f)){
+				$field = $f; break;
+			}
+		}
+		
+		if($field){
+			// get the data - if there is data && is active
+			$data = json_decode($e->object->get($field));
+			
+			if($data){
+				
+				$dates		= $data->dates;
+				$excluded	= $data->excluded;
+				$rrule		= $data->rrule;
+				
+				// check and convert excluded array
+				foreach($excluded as $key => $exclude){
+					// format W32/10/Thu/Aug/2017
+					$exclude = explode('/', $exclude);
+					$w = $exclude[0];
+					$d = $exclude[1];
+					$n = $exclude[2];
+					$m = $exclude[3];
+					$y = $exclude[4];
+					$h = date('g:i:s', $data->startDate);
+					$excluded[$key] = strtotime($m." ".$d." ".$y." ".$h);
+				}
+				
+				// not repeating - but has start_date
+				if($data->active == false){ $dates = array(); }
+				
+				// convert the dates to timestamps
+				foreach($dates as $key => $date){
+					// format W32/10/Thu/Aug/2017
+					// to: m/d/Y h:i:s
+					$date = explode('/', $date);
+					$w = $date[0];
+					$d = $date[1];
+					$n = $date[2];
+					$m = date('m', strtotime($date[3]));
+					$y = $date[4];
+					$h = date('g:i:s a', $data->startDate);
+					
+					$dates[$key] = strtotime($m."/".$d."/".$y." ".$h);
+					
+					// if it's in the exclude array - remove it
+					if(in_array($dates[$key],$excluded)){ unset($dates[$key]); }
+				}
+				
+				// check for the first item as the start date. if it doesn't exist,
+				// prepend it to the start of the array
+				if(!in_array($data->startDate, $dates)){ array_unshift($dates, $data->startDate); }
+				
+				$e->return = array_unique($dates);
+			}
+		}else{
+			
+			$e->return = array();
+			
+		}	
+		
+	}
+
+	
+	/**
+	*	
+	*	Get the events that are on on day (n) || (date)
+	*	
+	*/
+	public function ___day($date = false, $pwSelector = false){
+		
+		// check the date
+		$date = $this->formatDate($date);
+		
+		$selectorDate = $this->formatDate($date, 'W/d/D/M/Y');
+		if(!$selectorDate){ return; }
+		
+		$dayStart 	= strtotime(date("Y-m-d 00:00:01",$date));
+		$dayEnd 	= strtotime(date("Y-m-d 23:59:59",$date));
+		
+		$selector 	= "~=".$selectorDate;
+		$selector = $this->createSelector($selector);
+		
+		if(!$selector){ return new PageArray(); }
+		if($pwSelector){ $selector .= ','.$pwSelector; } // append user selector string
+		
+		$events 	= wire('pages')->find($selector);
+		$events 	= $this->processEvents($events, $dayStart, $dayEnd);
+		
+		return $events;
+		
+	}
+	
+	/**
+	*	
+	*	Get the events that are on week (n)
+	*	
+	*/
+	public function ___week($date = false, $pwSelector){
+		
+		// check the date
+		$date = $this->formatDate($date);
+		
+		if(!$date){ return; }
+		
+		$weekStart 	= strtotime('monday this week', $date);
+		$weekEnd 	= strtotime('sunday this week 23:59:59', $date);
+		$weekNum 	= date('W', $date);
+		
+		$selector 	= "~=W".$weekNum;
+		$selector 	= $this->createSelector($selector);
+		
+		if(!$selector){ return new PageArray(); }
+		if($pwSelector){ $selector .= ','.$pwSelector; } // append user selector string
+		
+		$events 	= wire('pages')->find($selector);
+		$events = $this->processEvents($events, $weekStart, $weekEnd);
+		
+		return $events;
+		
+	}
+	
+	/**
+	*	
+	*	Get the events that in month (n)
+	*	02/Sun/Apr/2017 - date format	
+	*
+	*/
+	public function ___month($date = false, $pwSelector = false){
+		
+		// check the date
+		$date = $this->formatDate($date);
+		
+		if(!$date){ return; }
+		
+		// day vars
+		$dayStart 	= strtotime(date("Y-m-d 00:00:01", $date));
+		$dayEnd 	= strtotime(date("Y-m-d 23:59:59", $date));
+		
+		$month 		= date('M', $date);
+		$year		= date('Y', $date);
+		
+		$monthStart = strtotime('first day of this month', $dayStart); 
+		$monthEnd	= strtotime('last day of this month', $dayEnd);
+		
+		$selector = "~=".$month."/".$year;
+		$selector 	= $this->createSelector($selector);
+		
+		if($pwSelector){ $selector .= ','.$pwSelector; } // append user selector string
+		if(!$selector){ return new PageArray(); }
+		
+		$events = wire('pages')->find($selector);
+		$events = $this->processEvents($events, $monthStart, $monthEnd);
+		
+		return $events;
+		
+	}
+	
+	
+	
+	/**
+	*	
+	*	Get the default Options for Lists	
+	*
+	*/
+	public function ___getListDefaultOptions(){
+		return array(
+			'selector'			=> '',
+			'monthFormat'		=> 'F',
+			'dateField'			=> 'recurme',
+			'renderEvent' 		=> array(
+				'dateFormat' 	=> 'M d, Y @ g:i a',
+				'timeFormat' 	=> 'g:i a',
+				'dayFormat'		=> 'd',
+				'monthFormat'	=> 'M',
+				'yearFormat'	=> 'Y',
+				'hourFormat'	=> 'g',
+				'minuteFormat'	=> 'i',
+				'secondFormat'	=> 's',
+				'ampmFormat'	=> 'a',
+				'xBefore' 		=> '<li class="rm-list-event {original.name}"><span class="rm-event-date">{time}</span> ',
+				'xItem'			=> '<a href="{link}" title="{title}">',
+				'xAfter'		=> '{title}</a></li>'
+			),
+			'renderDay'			=> array(
+				'xBefore'		=> '<ul class="rm-list-day {todayClass} rm-{dayName}"><li><h3>',
+				'xItem'			=> '<span class="rm-date-day">{day}</span><span class="rm-date-month">{month}</span><span class="rm-date-year">{year}</span></h3>',
+				'xListBefore'	=> '<ul class="rm-list-events">',
+				'xListAfter'	=> '</ul><!-- close list-events -->',
+				'xAfter'		=> '</li></ul><!-- close day -->'
+			),
+			'renderMonth'		=> array(
+				'xBefore'		=> '<ul class="rm-list-month rm-{month}"><li>',
+				'xItem'			=> '<h2>{month}</h2>',
+				'xAfter'		=> '</li></ul><!-- close month -->'
+			),
+			'cache'				=> true,
+			'cacheName'			=> '',
+			'noEvents'			=> '<p>'.$this->_('no events to show.')."</p>"
+		);
+	}
+	
+	/**
+	*	
+	*	Return a markupCalendar
+	*	Loosely based on: https://processwire.com/talk/topic/624-table-based-calendar-integration/
+	*	
+	*/
+	public function ___renderCalendar(array $settings = null){
+		
+		$out = '';
+		
+		$calendar = new rmCalendar();
+		$out .= $calendar->render($settings); 
+		
+		return $out;
+		
+	}
+	
+	/**
+	*	
+	*	Return a new Calendar Object
+	*	a shortcut to writing $var = new Calendar;
+	*	
+	*/
+	public function ___calendar(){
+		
+		return new rmCalendar();
+		
+	}
+	
+	/**
+	*	
+	*	Return a markupList
+	*	
+	*/
+	public function ___renderList($events = false, array $settings = null){
+		
+		// default options
+		if(!$events || !count($events)){ $events = $this->day(); }
+		$options = $this->getListDefaultOptions();
+		$this->listIdCount++; $listID = "rm-list-".$this->listIdCount;
+
+		// debugger ;)
+		if($this->debug){
+			$timer = Debug::timer();
+		}
+		
+		// get the user settings
+		if($settings != null){ $options = array_replace_recursive($options, $settings);}
+		
+		$options['dateField'] = ($options['dateField'] == '') ? 'recurme' : $options['dateField'];
+		$dateField			  = ($options['dateField'] == 'recurme') ? 'recurme' : $options['dateField'];
+		
+		// variables
+		$currentMonth 	= false;
+		$currentDay 	= false;
+		$out 			= '';
+		$debug 			= array();
+		
+		// if they are using a custom date field - set $event->start_date as their date field value
+		// also set $event->original to the $event opbject
+		if(count($events) && $options['dateField'] != 'recurme'){
+			foreach($events as $key => $e){
+				$e->of(false);
+				$events[$key]->start_date 	= $e->get($dateField);
+				$events[$key]->original 	= $e;
+			}
+		}
+		
+		// CACHE
+		// make a unique ID for this list to save and retrieve a cache value
+		// basing this on the first and last event in the array of $events
+		// + the unique listID (per page)
+		if($options['cache'] == true && count($events) > 2){
+			
+			$cacheName = '';
+			$e1 = $events[0];
+			$e2 = $events[count($events)-1];
+			
+			// auto-generate a cacheName
+			$cacheName  = $listID."-";
+			$cacheName .= wire('sanitizer')->name($e1->title).$e1->get($dateField)."|";
+			$cacheName .= wire('sanitizer')->name($e2->title).$e2->get($dateField);
+			
+			// if the user defined a cacheName, use that instead
+			if($options['cacheName']){ $cacheName = $options['cacheName']; }
+			$options['cacheName'] = $cacheName;
+			
+			// if the cache exists - return it and skip the rest
+			$existingCache = wire('cache')->get($cacheName);
+			if($existingCache){ 
+				return $existingCache;
+			}
+
+		} elseif($options['cache'] == false){
+			// delete the cache if it exists
+			wire('cache')->delete($options['cacheName']);
+		}// end cache
+		
+		foreach($events as $key => $event){
+			
+			$renderOptions = array(
+				'date'			=> $this->wire('datetime')->formatDate($event->start_date, trim($options['renderEvent']['dateFormat'])),
+				'time'			=> $this->wire('datetime')->formatDate($event->start_date, trim($options['renderEvent']['timeFormat'])),
+				'day'			=> $this->wire('datetime')->formatDate($event->start_date, trim($options['renderEvent']['dayFormat'])),
+				'month'			=> $this->wire('datetime')->formatDate($event->start_date, trim($options['renderEvent']['monthFormat'])),
+				'year'			=> $this->wire('datetime')->formatDate($event->start_date, trim($options['renderEvent']['yearFormat'])),
+				'hour'			=> $this->wire('datetime')->formatDate($event->start_date, trim($options['renderEvent']['hourFormat'])),
+				'minute'		=> $this->wire('datetime')->formatDate($event->start_date, trim($options['renderEvent']['minuteFormat'])),
+				'second'		=> $this->wire('datetime')->formatDate($event->start_date, trim($options['renderEvent']['secondFormat'])),
+				'ampm'			=> $this->wire('datetime')->formatDate($event->start_date, trim($options['renderEvent']['ampmFormat'])),
+				'dayName'		=> $this->wire('datetime')->formatDate($event->start_date, trim('D'))
+			);
+			
+			
+			
+			// find the current values and compare them
+			$activeMonth 	= date('M', $event->start_date);
+			$activeDay		= date('d', $event->start_date);
+			
+			if(($currentDay != false) && ($activeDay != $currentDay)){
+				$ecTemplate  = $options['renderDay']['xListAfter'];
+				$ecTemplate .= $options['renderDay']['xAfter'];
+				$out .= wirePopulateStringTags($ecTemplate, $renderOptions);
+			}
+			
+			// close the lists
+			if(($currentMonth != false) && ($activeMonth != $currentMonth)){
+				$mEndTemplate = $options['renderMonth']['xAfter'];
+				$out .= wirePopulateStringTags($mEndTemplate, $renderOptions);
+			}
+			
+			// print the month
+			if($activeMonth != $currentMonth){
+				$currentMonth = $activeMonth;
+				$monthTemplate  = $options['renderMonth']['xBefore'];
+				$monthTemplate .= $options['renderMonth']['xItem'];
+				$out .= wirePopulateStringTags($monthTemplate, $renderOptions);
+			}
+			
+			// print the day
+			if($activeDay != $currentDay){
+				$currentDay = $activeDay;
+				// if it's today, add a class
+				if($currentDay == date('d', time())){ $renderOptions['todayClass'] = 'rm-today '; }
+				$dayTemplate  = $options['renderDay']['xBefore'];
+				$dayTemplate .= $options['renderDay']['xItem'];
+				$dayTemplate .= $options['renderDay']['xListBefore'];
+				$out .= wirePopulateStringTags($dayTemplate, $renderOptions);
+			}
+			
+			$out .= $this->renderEvent($event,$options['renderEvent']);
+			
+			// last loop - close everything
+			if($key == count($events)-1){
+				$eeTemplate .= $options['renderDay']['xListAfter'];
+				$eeTemplate  = $options['renderDay']['xAfter'];
+				$eeTemplate .= $options['renderMonth']['xAfter'];
+				$out .= wirePopulateStringTags($eeTemplate, $renderOptions);
+			}
+		}
+		 
+		$cacheTag = '';
+		if($options['cache'] == true){ $cacheTag = ' data-cache="'.$options['cacheName'].'" '; }
+		
+		// if eventList is empty, show noEvents message
+		if($out == ''){ $out.= $options['noEvents']; }
+		
+		$out = '<div'.$cacheTag.' id="'.$listID.'" class="rm-list">'.$out.'</div>';
+		
+		// cache this
+		if($options['cache'] === true){
+			$expire = $this->createSelector('!=');
+			wire('cache')->save($options['cacheName'], $out, $expire);
+		}
+		
+		// get the debug render time
+		if($this->debug){
+			$debug['eventCount'] 	= count($events);
+			$debug['buildTime'] 	= Debug::timer($timer)." Seconds";
+			$debug['Config Timezone'] = $this->config->timezone;
+			if(!$this->config->timezone){ $debug['Config Timezone'] = 'NO $config->timezone!'; }
+			$debug['options']		= $options;
+			$debug['cacheInfo']		= wire('cache')->getInfo(true, $options['cacheName']);
+			
+			$out .= $this->renderDebug($this->parseDebug($debug));
+		}
+		
+		return $out;
+	}
+	
+	/**
+	*	
+	*	Render Event @ v2. - shortcut for now. 
+	*	
+	*/
+	public function ___renderEvent($event, array $setting = null){
+		
+		$out = '';
+		
+		// check if there is an event
+		if(!$event) return new Page();
+		
+		// options
+		$options = array(
+			'timeFormat'	=> 'g:i a',
+			'dateFormat' 	=> 'M d, Y @ g:i a',
+			'dayFormat'		=> 'd',
+			'monthFormat'	=> 'M',
+			'yearFormat'	=> 'Y',
+			'hourFormat'	=> 'g',
+			'minuteFormat'	=> 'i',
+			'secondFormat'	=> 's',
+			'ampmFormat'	=> 'a',
+			'xBefore' 		=> '<li>',
+			'xItem'			=> '{time} • <a href="{link}" title="{title}">{title}</a>',
+			'xAfter'		=> '</li>'
+		);
+		
+		// get the user settings
+		if($settings != null){ $options = array_replace_recursive($options, $settings);}
+		
+		// add some extra date/time event properties
+		/*
+			NOTE TO SELF: 
+				1. don't format the start_date EVER - critical. 
+				2. these properties are created in processEvent Also. 
+		*/
+		/*$event->timestamp   = $event->start_date;
+		$event->time 		= date($options['timeFormat'],   $event->timestamp);
+		$event->date 		= date($options['dateFormat'],   $event->timestamp); // clone for easy use
+		$event->day 		= date($options['dayFormat'], 	 $event->timestamp);
+		$event->month 		= date($options['monthFormat'],  $event->timestamp);
+		$event->year 		= date($options['yearFormat'], 	 $event->timestamp);
+		$event->hour 		= date($options['hourFormat'], 	 $event->timestamp);
+		$event->minute 		= date($options['minuteFormat'], $event->timestamp);
+		$event->second 		= date($options['secondFormat'], $event->timestamp);
+		$event->ampm		= date($options['ampmFormat'], 	 $event->timestamp);
+		$event->link 		= $event->original->url.'?date='.$event->timestamp;*/
+		
+		$event->timestamp   = $event->start_date;
+		$event->time 		= $this->wire('datetime')->formatDate($event->timestamp, trim($options['timeFormat']));
+		$event->date 		= $this->wire('datetime')->formatDate($event->timestamp, trim($options['dateFormat']));
+		$event->day 		= $this->wire('datetime')->formatDate($event->timestamp, trim($options['dayFormat']));
+		$event->month 		= $this->wire('datetime')->formatDate($event->timestamp, trim($options['monthFormat']));
+		$event->year 		= $this->wire('datetime')->formatDate($event->timestamp, trim($options['yearFormat']));
+		$event->hour 		= $this->wire('datetime')->formatDate($event->timestamp, trim($options['hourFormat']));
+		$event->minute 		= $this->wire('datetime')->formatDate($event->timestamp, trim($options['minuteFormat']));
+		$event->second 		= $this->wire('datetime')->formatDate($event->timestamp, trim($options['secondFormat']));
+		$event->ampm		= $this->wire('datetime')->formatDate($event->timestamp, trim($options['ampmFormat']));
+		$event->link 		= $event->original->url.'?date='.$event->timestamp;	 
+
+		// create the event URL
+		if(wire('page')->template->name == 'admin' || $this->input->get('al')){ 
+			$event->link = $event->original->editURL;
+		}
+		
+		// combine template
+		$out .= $event->get($options['xBefore'].$options['xItem'].$options['xAfter']);
+		
+		return $out;
+		
+	}
+	
+	/**
+	*	
+	*	Return an HTML UL list of value pairs for debugger output
+	*	
+	*/
+	public function ___parseDebug(array $debug = null){
+		
+		$out = '';
+		
+		foreach($debug as $key => $value){
+			
+			$out .= '<li><div class="inner"><span class="rm-debug-key">'.$key.'</span>';
+			
+			if(is_array($value)){
+				$out .= '<ul>'.$this->parseDebug($value).'</ul>';	
+			}else{
+				$out .= '<span class="rm-debug-value">'.htmlentities($value).'</span>';
+			}
+			
+			$out .= '</div></li>';
+			
+		}
+		
+		return $out;
+		
+	}
+	
+	/**
+	*	
+	*	Output Debugger HTML
+	*	
+	*/
+	public function ___renderDebug($debugContent){
+		
+		$out  = '';
+		$out .= '<link rel="stylesheet" href="'.$this->config->urls->MarkupRecurme.'css/recurme-debugger.css" type="text/css">';
+		$out .= '<div class="rm-debugger"><h3>Recurme Debug</h3>';
+		$out .= '<div class="rm-debug-window">';
+		$out .= $debugContent;
+		$out .= '</div></div>';
+		
+		return $out;
+	}
+	
+	public function ___processPages($events, $dateField = false){
+
+		$options = array(
+			'timeFormat'	=> 'g:i a',
+			'dateFormat' 	=> 'M d, Y @ g:i a',
+			'dayFormat'		=> 'd',
+			'monthFormat'	=> 'M',
+			'yearFormat'	=> 'Y',
+			'hourFormat'	=> 'g',
+			'minuteFormat'	=> 'i',
+			'secondFormat'	=> 's',
+			'ampmFormat'	=> 'a'
+		);
+		
+		if(!count($events) || $dateField == false){ return new PageArray(); }
+		
+		foreach($events as $event){
+			
+			$startDate = $event->get($dateField);
+			
+			// add a clone of the properties from processEvent
+			$event->orig_date 	= $startDate;
+			$event->original	= $event;
+			$event->start_date 	= $startDate;
+			$event->dates_count	= 1;
+			$event->end_date	= false;
+			$event->rrule		= 'norrule';
+			
+			// add some more values
+			/*
+				NOTE TO SELF:
+				1. these properties are cloned from renderEvent.
+				2. so are the settings above.	
+			*/
+			$event->timestamp   = $event->start_date;
+			$event->time 		= date($options['timeFormat'],   $event->timestamp);
+			$event->date 		= date($options['dateFormat'],   $event->timestamp); // clone for easy use
+			$event->day 		= date($options['dayFormat'], 	 $event->timestamp);
+			$event->month 		= date($options['monthFormat'],  $event->timestamp);
+			$event->year 		= date($options['yearFormat'], 	 $event->timestamp);
+			$event->hour 		= date($options['hourFormat'], 	 $event->timestamp);
+			$event->minute 		= date($options['minuteFormat'], $event->timestamp);
+			$event->second 		= date($options['secondFormat'], $event->timestamp);
+			$event->ampm		= date($options['ampmFormat'], 	 $event->timestamp);
+		}
+		
+		return $this->sortByDate($events);
+	}
+	
+	/**
+	*	
+	*	Process the recurme json
+	*	
+	*/
+	public function ___processEvents($events, $dateStart = false, $dateEnd = false){
+		
+		$options = array(
+			'timeFormat'	=> 'g:i a',
+			'dateFormat' 	=> 'M d, Y @ g:i a',
+			'dayFormat'		=> 'd',
+			'monthFormat'	=> 'M',
+			'yearFormat'	=> 'Y',
+			'hourFormat'	=> 'g',
+			'minuteFormat'	=> 'i',
+			'secondFormat'	=> 's',
+			'ampmFormat'	=> 'a'
+		);
+		
+		// variables
+		$list = new PageArray();
+		$list->setDuplicateChecking(false);
+		$field = false;
+		
+		// if there are no events, return nothing
+		if(!count($events)){ return new PageArray(); }
+
+		foreach($events as $event){
+			
+			// check for the recur field
+			foreach($this->recurFields as $f){
+				if($event->template->hasField($f)){ $field = $f; break; } // we found the field! yay!
+			}
+			
+			// get the data - if there is data && is active
+			$data = json_decode($event->get($field));
+			
+			if($data){	
+				
+				// variables
+				$startDate 	= strtotime(date('Y-M-d',$data->startDate)." 00:00:00"); 
+				$endDate	= strtotime(date('Y-M-d',$data->endDate)." 23:59:59");
+				$dates		= $data->dates;
+				$excluded	= $data->excluded;
+				$exArray	= array();
+				$rrule		= $data->rrule;
+				
+				// check and convert excluded array
+				foreach($excluded as $key => $exclude){
+					// format W32/10/Thu/Aug/2017
+					$exclude = explode('/', $exclude);
+					$w = $exclude[0];
+					$d = $exclude[1];
+					$n = $exclude[2];
+					$m = date('m', strtotime($exclude[3]));
+					$y = $exclude[4];
+					$h = date('g:i:s a', $data->startDate);
+					$exArray[] = strtotime($m."/".$d."/".$y." ".$h);
+				}
+				
+				
+				// not repeating - but has start_date
+				if($data->active == false){ $dates = array(); }
+				
+				// optimize the $dates array
+				// this is magic - saved us 80% processing time.  
+				$dates = $this->optimizeDates($dates, $dateEnd);
+				
+				
+				// convert the dates to timestamps
+				foreach($dates as $key => $date){
+					// format W32/10/Thu/Aug/2017
+					// to: m/d/Y h:i:s
+					$date = explode('/', $date);
+					$w = $date[0];
+					$d = $date[1];
+					$n = $date[2];
+					$m = date('m', strtotime($date[3]));
+					$y = $date[4];
+					$h = date('g:i:s a', $data->startDate);
+					
+					$dates[$key] = strtotime($m."/".$d."/".$y." ".$h);
+					
+					// filter the dates
+					// if the date is before the start or after the end - remove it.
+					// if it's in the exclude array - remove it
+					if(in_array($dates[$key],$exArray)){ unset($dates[$key]);  }
+					if($dateStart && $dates[$key] < $dateStart){ unset($dates[$key]); }
+					if($dateEnd && $dates[$key] > $dateEnd){ unset($dates[$key]); }
+				}
+				
+				// check for the first item as the start date. if it doesn't exist,
+				// prepend it to the start of the array
+				if(($data->startDate > $dateStart) && ($data->startDate < $dateEnd) && (!in_array($data->startDate, $dates))){ array_unshift($dates, $data->startDate); }
+				
+				// create a new page object for each correct date
+				foreach(array_unique($dates) as $date){
+					// make event page object
+					$p 				= new Page();
+					$p->of(false);
+					$p->template	= $event->template;
+					$p->orig_date 	= $startDate;
+					$p->original	= $event;
+					$p->start_date 	= $date;
+					$p->dates_count	= count($dates);
+					$p->end_date	= $endDate;
+					$p->rrule		= $rrule;
+					//$p->dates		= $dates; // we have moved this to a hook::method for speed and size
+					if($event->title){ $p->title = $this->sanitizer->unentities($event->title); }
+					
+					// add some more values
+					/*
+						NOTE TO SELF:
+						1. these properties are cloned from renderEvent.
+						2. so are the settings above.	
+					*/
+					/*$p->timestamp   = $p->start_date;
+					$p->time 		= date($options['timeFormat'],   $p->timestamp);
+					$p->date 		= date($options['dateFormat'],   $p->timestamp); // clone for easy use
+					$p->day 		= date($options['dayFormat'], 	 $p->timestamp);
+					$p->month 		= date($options['monthFormat'],  $p->timestamp);
+					$p->year 		= date($options['yearFormat'], 	 $p->timestamp);
+					$p->hour 		= date($options['hourFormat'], 	 $p->timestamp);
+					$p->minute 		= date($options['minuteFormat'], $p->timestamp);
+					$p->second 		= date($options['secondFormat'], $p->timestamp);
+					$p->ampm		= date($options['ampmFormat'], 	 $p->timestamp);*/
+					
+					$p->timestamp   = $p->start_date;
+					$p->time 		= $this->wire('datetime')->formatDate($p->timestamp, trim($options['timeFormat']));
+					$p->date 		= $this->wire('datetime')->formatDate($p->timestamp, trim($options['dateFormat']));
+					$p->day 		= $this->wire('datetime')->formatDate($p->timestamp, trim($options['dayFormat']));
+					$p->month 		= $this->wire('datetime')->formatDate($p->timestamp, trim($options['monthFormat']));
+					$p->year 		= $this->wire('datetime')->formatDate($p->timestamp, trim($options['yearFormat']));
+					$p->hour 		= $this->wire('datetime')->formatDate($p->timestamp, trim($options['hourFormat']));
+					$p->minute 		= $this->wire('datetime')->formatDate($p->timestamp, trim($options['minuteFormat']));
+					$p->second 		= $this->wire('datetime')->formatDate($p->timestamp, trim($options['secondFormat']));
+					$p->ampm		= $this->wire('datetime')->formatDate($p->timestamp, trim($options['ampmFormat']));	
+					
+					// add the page
+					$list->add($p);
+				}
+				
+			}
+			
+		}
+		
+		// doing our own sorting by date	
+		return $this->sortByDate($list);
+			
+	}
+	
+	/**
+	*	
+	*	Optimize Dates for processDates
+	*	Cut the date array from the json content
+	*	Return the shortened list
+	*	
+	*/
+	public function ___optimizeDates($dates, $dateEnd){
+		// optimize the $dates array
+		// this is magic - saved us 80% processing time.  
+		$filter = '*'.date('M/Y', $dateEnd); // last dateEnd month date
+		$shortDates = $this->array_value_exists_wildcard ( $dates, $filter, $return = 'key-value' );
+		end($shortDates); // get the last one
+		$cutter = key($shortDates);
+		if($cutter){ $dates = array_slice($dates, 0, $cutter+1); }
+		return $dates;
+	}
+	
+	/**
+	*	
+	*	Helper method to seach for wildcard values in array keys
+	*	
+	*/
+	public function ___array_key_exists_wildcard ( $array, $search, $return = '' ) {
+	    $search = str_replace( '\*', '.*?', preg_quote( $search, '/' ) );
+	    $result = preg_grep( '/^' . $search . '$/i', array_keys( $array ) );
+	    if ( $return == 'key-value' )
+	        return array_intersect_key( $array, array_flip( $result ) );
+	    return $result;
+	}
+	
+	/**
+	*	
+	*	Helper method to seach for wildcard values in array values
+	*	
+	*/
+	public function ___array_value_exists_wildcard ( $array, $search, $return = '' ) {
+	    $search = str_replace( '\*', '.*?', preg_quote( $search, '/' ) );
+	    $result = preg_grep( '/^' . $search . '$/i', array_values( $array ) );
+	    if ( $return == 'key-value' )
+	        return array_intersect( $array, $result );
+	    return $result;
+	}
+	
+	/**
+	*	
+	*	Doing some fancy sorting of the events after the fact - by start_date
+	*	
+	*/
+	public function ___sortByDate($list, $duplicateChecking = false){
+		$sortedList = $list->makeNew();
+		$sortedList->setDuplicateChecking(false);
+		$e = $list->getArray();
+		usort($e, array($this, 'sortByDateCompare'));
+		$sortedList->import($e);
+		$list = $sortedList;
+		
+		return $list;
+	}
+	/* compare method for usort */
+	public function ___sortByDateCompare($a, $b){
+		if ($a->start_date == $b->start_date) {return 0;}return ($a->start_date < $b->start_date) ? -1 : 1; 
+	}
+	
+	/**
+	*	
+	*	Delete All Recurme markup cache
+	*	Currently: calendar, list
+	*	
+	*/
+	public function ___deleteCache(){
+		wire('cache')->delete("rm-calendar-*");	// calendars
+		wire('cache')->delete("rm-list-*"); 	// lists
+	}
+	
+	/**
+	*	
+	*	Configuration fields
+	*	
+	*/
+	static public function getModuleConfigInputfields(array $data){
+		
+		if(!isset($data['validate_email'])){ 	$data['validate_email'] = ''; }
+		if(!isset($data['validate_key'])){ 		$data['validate_key'] 	= ''; }
+		
+		$modules = Wire::getFuel('modules');
+		$fields = new InputfieldWrapper();
+		$f = $modules->get("InputfieldText");
+		$f->attr('name+id', 'validate_email');
+		$f->attr('value', $data['validate_email']);
+		$f->label = 'License Key Email Address';
+		$f->description = 'Please use the email address that you used when purchasing Recurme.';
+		// $f->notes = 'You should have received this information with your purchase email.';
+		$fields->append($f);
+		
+		$f = $modules->get("InputfieldText");
+		$f->attr('name+id', 'validate_key');
+		$f->attr('value', $data['validate_key']);
+		$f->label = 'License Key';
+		$f->description = 'Please use License Key that you received when purchasing Recurme.';
+		$f->notes = 'You should have received this information with your purchase email.';
+		$fields->append($f);
+		
+		return $fields;
+		
+	}
+	
+	/**
+	*	
+	*	Code Format Validate
+	*	
+	*/
+	
+	/*-------99L.recurme-license.php---------*/
+	
+private function i(){$this->v = false;} private function codeValidate($serial,$name=""){ if(empty($serial)|| $serial=="") return $this->i(); $serial=str_replace("-","",$serial); $serial=strtoupper($serial); $serial=str_replace(array("0","1","O","I",), array("","","","",), $serial); $keylen= $this->keylen; $thislen=strlen($serial); if($keylen<>$thislen)return $this->i(); $initlen=$this->initLen(); $initcode=substr($serial,0,$initlen); $extendedcode=$this->extendCode($initcode,$name); $fullcode=substr($extendedcode,0,$keylen); if($fullcode==$serial) return $this->v(); else return $this->i(); } private function extendCode($initcode,$name) { $software=$this->software; $p1str=$this->sumDigit($initcode); $p1str.=$this->add32($initcode,$name."99Lime".$software); $p1str=strtoupper($p1str); $p1str=str_replace(	array("0","1","O","I",), array("","","","",), $p1str); $p1len=strlen($p1str); $extrabit="";$i=0; while(strlen($extrabit)<$this->keylen-2) { $extrabit.=substr($p1str,$i,1); $extrabit.=substr($p1str,$p1len-$i-1,1); $i++; } return $initcode.$extrabit."6F75"; } private function initLen(){ $keylen=$this->keylen; $initlen=intval($keylen/3); $initlen=max($initlen,1); return $initlen; } private function add32($a,$b){ $sum=base_convert($a,36,10)+base_convert($b,36,10); $sum32=base_convert($sum,10,36); $sum32=str_replace(	array("0","1","O","I","o","i"), array("","","","","","",), $sum32); return $sum32; } private function sumDigit($str){ $a=str_split($str);$sum=0; for($i=0;$i<count($a);$i++)$sum=$sum+base_convert($a[$i],36,10); $sum=str_replace(	array("0","1","O","I","o","i"), array("AZ","BY","29","38","29","38",), $sum); return $sum; } private function v(){$this->v = true;} 
+}
+
+class rmCalendar extends WireData implements Module{
+	
+	public $events;
+	public $options;
+	public $settings; // not in use
+	public $ajaxData;
+	
+	/**
+	*	
+	*	Get the default Options for Calendars	
+	*
+	*/
+	public function getDefaultCalendarOptions(){
+		return array(
+			'selector'		=> '',
+			'month'			=> date('m'),
+			'year'			=> date('Y'),
+			'weekStart' 	=> 0, // 0 sunday, 1 monday
+			'monthFormat' 	=> 'F Y',
+			'dayNumFormat'	=> 'j',
+			'timeFormat'	=> 'g:i a',
+			'weekDayNames'	=> array($this->_('Sun'),$this->_('Mon'), $this->_('Tue'), $this->_('Wed'), $this->_('Thu'), $this->_('Fri'), $this->_('Sat')),
+			'showArrows'	=> true,
+			'prevArrow'		=> '&larr;',
+			'nextArrow'		=> '&rarr;',
+			'mini'			=> false,
+			'dateField'		=> 'recurme',
+			'renderEvent' 	=> array(
+				'dateFormat' 	=> 'M d, Y @ g:i a',
+				'timeFormat' 	=> 'g:i a',
+				'dayFormat'		=> 'd',
+				'monthFormat'	=> 'M',
+				'yearFormat'	=> 'Y',
+				'hourFormat'	=> 'g',
+				'minuteFormat'	=> 'i',
+				'secondFormat'	=> 's',
+				'ampmFormat'	=> 'a',
+				'xBefore' 		=> '<li class="event-{original.id} {original.name}">',
+				'xItem'			=> '<span class="rm-date">{time}</span> <a href="{link}" title="{title}">{title}</a>',
+				'xAfter'		=> '</li>'
+			),
+			'getVarCalendar'=> 'c',
+			'getVarMonth'	=> 'm', // ie. ?m=05&y=2017
+			'getVarYear'	=> 'y',
+			'ajax'			=> true,
+			'cache'			=> true,
+			'cacheName'		=> '', // must be unique - generated on the fly if not provided.
+			'debug'			=> false,
+			'_calendarID'	=> 1 // this is internal.
+		);
+	}
+	
+	public function render(array $settings = null){
+		
+		
+		// default options
+		$events = new PageArray();
+		$options = $this->getDefaultCalendarOptions();
+		$this->recurme->calendarIdCount++; $calendarID = "rm-calendar-".$this->recurme->calendarIdCount;
+		$options['_calendarID'] = $this->recurme->calendarIdCount;
+		
+		// get the user settings
+		if($settings != null){ $options = array_replace_recursive($options, $settings);}
+		
+		// debugger ;)
+		if($this->recurme->debug || $options['debug']){
+			$timer = Debug::timer();
+		}
+		
+		// check for this calendar's get vars
+		$getVarCalendar = $this->input->get($options['getVarCalendar']);
+		if($getVarCalendar && $getVarCalendar == $options['_calendarID']){
+			$options['month'] = $this->input->get($options['getVarMonth']);
+			$options['year']  = $this->input->get($options['getVarYear']);
+		}
+
+		// double check thata these have values
+		if(!$options['month']){ $options['month'] = date('m', time()); }
+		if(!$options['year']) { $options['year']  = date('Y', time()); }
+		
+		$out 				= '';
+		$eventList 			= new PageArray();
+		$month 				= $options['month']; // if no month, use this month
+		$year 				= $options['year']; // if no year, use this year
+		//$startTime 			= strtotime("$year-$month-01 00:00:00"); 
+		//$endTime 			= strtotime('last day of this month', $startTime);
+		$startTime 			= strtotime("$year-$month-01 00:00:01");
+		$endTime 			= strtotime(date("Y-m-t 23:59:59", $startTime)); 
+		$lastMonth			= strtotime('-1 month', $startTime);
+		$nextMonth			= strtotime('+1 month', $startTime);
+		$firstDayName 		= date('D', $startTime); // i.e. Tue
+		$daysInMonth 		= date('t', $startTime); // 28 through 31
+		$prevArrow 			= '';
+		$nextArrow 			= '';
+		$debug 				= array();
+		$options['dateField'] = ($options['dateField'] == '') ? 'recurme' : $options['dateField'];
+		$dateField			  = ($options['dateField'] == 'recurme') ? 'start_date' : $options['dateField'];
+		$weekDayNames 		  = array('Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat');
+		
+		// check if we are using a custom dateField
+		// if so, return some pages, else, use recurme events
+		if($dateField != 'start_date'){
+			$s = $dateField.'>='.$startTime.','.$dateField."<=".$endTime.',sort='.$dateField;
+			if($this->pages->count($s)){
+				$events = $this->pages->find($s);
+				$events = $this->recurme->processPages($events, $dateField);
+			}
+		}else{
+			// get events for this month
+			$events = wire('recurme')->month($startTime, $options['selector']);
+		}
+		
+		// save the events to the object
+		$this->events = $events;
+		
+		// CACHE
+		// make a unique ID for this calendar to save and retrieve a cache value
+		// basing this on the first and last event in the array of $events
+		// + the unique calendarID (per page)
+		if($options['cache'] == true && count($events) > 2){
+			
+			$cacheName = '';
+			$e1 = $events[0];
+			$e2 = $events[count($events)-1];
+			
+			// auto-generate a cacheName
+			$cacheName  = $calendarID."-";
+			$cacheName .= wire('sanitizer')->name($e1->title).$e1->get($dateField)."|";
+			$cacheName .= wire('sanitizer')->name($e2->title).$e2->get($dateField);
+			
+			// cache $_GET generated calendars with unique identifier.
+			if(isset($_GET[$options['getVarCalendar']])){
+				// append the get var to the $cacheName
+				$cacheName .= "|?".$options['getVarCalendar']."=".$options['_calendarID'];
+				$cacheName .= $options['getVarMonth']."=".$month;
+				$cacheName .= $options['getVarYear']."=".$year;
+			}
+			
+			// if the user defined a cacheName, use that instead
+			if($options['cacheName']){ $cacheName = $options['cacheName']; }
+			$options['cacheName'] = $cacheName;
+			
+			// if the cache exists - return it and skip the rest
+			$existingCache = wire('cache')->get($cacheName);
+			if($existingCache){ 
+				return $existingCache;
+			}
+
+		} elseif($options['cache'] == false){
+			// delete the cache if it exists
+			wire('cache')->delete($options['cacheName']);
+		}// end cache
+		
+		// start the calendar on Sunday or Monday
+		if($options['weekStart'] == 1){   
+			$ee = $weekDayNames[0];
+			unset($weekDayNames[0]);
+			$weekDayNames[0] = $ee;
+			//$weekDayNames = array_values($weekDayNames); // don't do this.
+			//print_r($weekDayNames);
+		}
+		
+		// arrows
+		if($options['showArrows']){
+			$adminLink = false;
+			if(wire('page')->template->name == 'admin' || $this->input->get('al')){ $adminLink = true; }
+			$prevArrow  = '<a class="rm-arrow-prev" href="./?'.$options['getVarCalendar']."=".$options['_calendarID']."&";
+			$prevArrow .= $options['getVarMonth'].'='.date('m',$lastMonth).'&'.$options['getVarYear'].'='.date('Y',$lastMonth);
+			if($adminLink){ $prevArrow .= '&al=true';} // admin link
+			$prevArrow .= '">'.$options['prevArrow'].'</a>';
+			$nextArrow  = '<a class="rm-arrow-next" href="./?'.$options['getVarCalendar']."=".$options['_calendarID']."&";
+			$nextArrow .= $options['getVarMonth'].'='.date('m',$nextMonth).'&'.$options['getVarYear'].'='.date('Y',$nextMonth);
+			if($adminLink){ $nextArrow .= '&al=true';} // admin link
+			$nextArrow .= '">'.$options['nextArrow'].'</a>';
+		}
+		
+		// make the calendar headline
+		$monthTitle = $this->wire('datetime')->formatDate($startTime, trim($options['monthFormat']));
+		$out .= '<h2>'.$prevArrow;
+		$out .= '<span class="rm-month-title">'.$monthTitle.'</span>';
+		$out .= '<span class="rm-loader"></span>';
+		$out .= $nextArrow.'</h2>'; // i.e. October 2011
+		
+		$out .= '<div class="rm-inner">';
+		
+		// create the calendar header with weekday names
+		$out .= '<table><thead><tr>';
+		foreach($weekDayNames as $key => $name) $out .= '<th class="rm-'.strtolower($name).'">'.$options['weekDayNames'][$key].'</th>';
+		$out .= '</tr></thead><tbody><tr>';
+		
+		// fill in blank days from last month till we get to first day in this month
+		foreach($weekDayNames as $name) {
+		    if($name == $firstDayName){ break; }
+		    $out .= '<td class="rm-day-blank rm-'.strtolower($name).'"> </td>';
+		}
+		
+		// if they are using a custom date field - set $event->start_date as their date field value
+		// also set $event->original to the $event object
+		if($dateField != 'start_date'){
+			
+			$events = $this->recurme->processPages($events, $dateField);
+			
+			// resort the events, remove duplicates
+			$events = $this->recurme->sortByDate($events, true);
+			
+			foreach($events as $key => $e){
+				$e->of(false);
+				$events[$key]->start_date 	= $e->original->get($dateField);
+				//$events[$key]->original 	= $e;
+			}
+		}
+		
+		// save the settings to the object
+		$this->options = $options;
+		
+		// draw the calendar
+		for($day = 1; $day <= $daysInMonth; $day++) {
+		
+		    // get the time info that we need for this day
+		    $dayStart 	= strtotime("$year-$month-$day 00:00:00"); 
+		    $dayEnd		= strtotime(date('Y-M-d',$dayStart)." 23:59:59");
+		    $dayName 	= date('D', $dayStart);
+		    $dayNum		= $this->wire('datetime')->formatDate($dayStart, trim($options['dayNumFormat']));
+		
+		    // if we're at the beginning of a week, start a new row
+		    if($day >= 1 && $dayName == reset($weekDayNames)) $out .= "<tr>";
+		
+		    // create the list of events for this day (if any)
+		    $list = '';
+		    $selector = "start_date>=$dayStart,start_date<=$dayEnd";
+		    if(count($events)) { $eventList = $events->find($selector); }
+
+		    foreach($eventList as $event) {
+			    
+				$list .= $this->recurme->renderEvent($event, $options['renderEvent']);
+			 
+		    }
+		
+		    // if any events were found for this day, wrap it in <ul> tag
+		    $listClass = '';
+		    if($list) {
+			    $list = '<ul class="rm-calendar-list">'.$list.'</ul>';
+			    $listClass = ' has-events';
+		    }
+		
+		    // make the day column with day number as header and event list as body
+		    $todayClass = '';
+		    if(date('j M Y', $dayStart) == date('j M Y',time())){ $todayClass = ' rm-today'; }
+		    $out .= '<td class="rm-day rm-'.strtolower($dayName).$todayClass.'" onclick=""><div class="rm-day-wrap">';
+		    $out .='<div class="rm-day-inner'.$listClass.'"><span class="rm-day-number">'.$dayNum.'</span>'.$list.'</div></div></td>';
+		
+		    // if last day in week, then close out the row
+		    if($dayName == end($weekDayNames)) $out .= '</tr>';
+		}
+		
+		// finish out the week with blank days for next month
+		$endDay = array_search($dayName, $weekDayNames); 
+		$endDays = array_slice($weekDayNames, $endDay, null, true);
+		foreach($endDays as $key => $d){
+			if($key != $endDay){
+				$out .= '<td class="rm-day-blank rm-'.strtolower($weekDayNames[$key]).'"> </td>';
+			}
+		}
+		
+		// close the last row and table
+		$out .= '</tr></tbody></table>';
+		
+		// if mini == true, add mini class
+		$miniClass = '';
+		if($options['mini']){ $miniClass = ' rm-mini '; }
+		
+		if(!wire('recurme')->v){
+			
+			$out .= '<style type="text/css">.rm-notice{background:#fff;border:1px solid red;padding:10px;font-size:12px;line-height:1.2;color:red;margin:10px 0;}</style>';
+			$out .= '<div class="rm-notice"><i class="fa fa-warning"></i> Please provide your License Key here: ';
+			$out .= '<a href="'.wire('config')->urls->admin.'module/edit?name=MarkupRecurme">Recurme Module Settings</a></div>';
+			
+		}
+		
+		// if AJAX
+		$dataAjax 	 = '';
+		if($options['ajax']){
+			$dataAjax 	 = ' data-ajax="true" ';
+			$out .= '<script type="application/json" data-url="'.$this->config->urls->root.'recurme-ajax/?">'.$this->ajaxData().'</script>';
+		}
+		
+		$out .= "</div>"; /* close rm-inner */
+		
+		// output the calendar
+		$cacheTag = '';
+		if($options['cache'] == true){ $cacheTag = ' data-cache="'.$options['cacheName'].'" '; }
+		$out = '<div'.$cacheTag.' id="'.$calendarID.'" class="rm-calendar'.$miniClass.'"'.$dataAjax.'onclick="">'.$out.'</div>';
+		
+		// cache this
+		if($options['cache'] == true){
+			$expire = $this->recurme->createSelector('!=');
+			wire('cache')->save($options['cacheName'], $out, $expire);	
+		} 
+		
+		// get the debug render time
+		if($this->recurme->debug || $options['debug']){
+			$debug['eventCount'] 	= count($events);
+			$debug['buildTime'] 	= Debug::timer($timer)." Seconds";
+			$debug['Config Timezone'] = $this->config->timezone;
+			if(!$this->config->timezone){ $debug['Config Timezone'] = 'NO $config->timezone!'; }
+			$debug['monthStart']	= date(DATE_RFC2822, $startTime);
+			$debug['monthEnd'] 		= date(DATE_RFC2822, $endTime); 
+			$debug['lastMonth']		= date(DATE_RFC2822, $lastMonth); 
+			$debug['nextMonth']		= date(DATE_RFC2822, $nextMonth); 
+			$debug['options']		= $options;
+			$debug['cacheInfo']		= wire('cache')->getInfo(true, $options['cacheName']);
+			
+			$out .= $this->recurme->renderDebug($this->recurme->parseDebug($debug));
+		}
+		
+		return $out.'';
+		
+	}
+	
+	public function ajaxData(){
+		
+		$options = $this->options;
+		
+		array_walk_recursive($options, function (&$value) {
+			$value = htmlentities($value);
+		});
+		$this->ajaxData = json_encode($options);
+		return $this->ajaxData;
+	}
+	
+	public function getEvents(){
+		return $this->events;
+	}
+	
+	public function getOptions(){
+		return $this->options;
+	}
+	
+}

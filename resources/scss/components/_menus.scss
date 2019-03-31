@@ -15,10 +15,15 @@
     &-image {
       background-repeat: no-repeat;
       background-position: center center;
-      width: 100%;
+      width: pxem(250);
       height: pxem(250);
       background-size: cover;
       margin-bottom: pxem(20);
+
+      img {
+        width: 100%;
+        height: auto;
+      }
     }
 
     &-title {

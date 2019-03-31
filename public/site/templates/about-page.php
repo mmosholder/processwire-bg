@@ -34,27 +34,20 @@ include('./_head.php'); // include header markup ?>
           </div>
         </div>
       </div>
-    <?php endif ?>
+    <?php endif; ?>
+    
+    <?php if($page->image_grid): ?>
+      <div class="container">
+        <div class="row">
+          <div class="content -flex"><?php
 
-    <div class="container">
-      <div class="row">
-        <div class="content">
-          <h1><?=$page->second_title?></h1>
+            foreach($page->image_grid as $imageItem) {
+                echo "<div class='image-item'><div class='-image' style='background-image: url({$imageItem->images->first()->url})'></div></div>";              
+  					}
+          ?></div>
         </div>
       </div>
-    </div>
-
-    <div class="container">
-      <div class="row">
-        <div class="content"><?php
-
-          foreach($page->team_block_repeater as $block) {
-              $image = $block->images->first();
-              echo "<div class='team-item -text-left'><div class='-text'>{$block->body}</div><div class='-image'><img src='{$image->url}'/></div></div>";              
-					}
-        ?></div>
-      </div>
-    </div>
+    <?php endif ?>
 	</div>
 
 

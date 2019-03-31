@@ -99,7 +99,7 @@ class Google_Service_CloudTasks_Resource_ProjectsLocationsQueues extends Google_
    * Authorization requires the following [Google IAM](/iam) permission on the
    * specified resource parent:
    *
-   * * `cloudtasks.queues.getIamPolicy` (queues.getIamPolicy)
+   * * `cloudtasks.queues.getIamPolicy`  (queues.getIamPolicy)
    *
    * @param string $resource REQUIRED: The resource for which the policy is being
    * requested. See the operation documentation for the appropriate value for this
@@ -125,6 +125,16 @@ class Google_Service_CloudTasks_Resource_ProjectsLocationsQueues extends Google_
    * The location name. For example: `projects/PROJECT_ID/locations/LOCATION_ID`
    * @param array $optParams Optional parameters.
    *
+   * @opt_param string filter `filter` can be used to specify a subset of queues.
+   * Any Queue field can be used as a filter and several operators as supported.
+   * For example: `<=, <, >=, >, !=, =, :`. The filter syntax is the same as
+   * described in [Stackdriver's Advanced Logs
+   * Filters](/logging/docs/view/advanced_filters).
+   *
+   * Sample filter "app_engine_http_target: *".
+   *
+   * Note that using filters might cause fewer queues than the requested_page size
+   * to be returned.
    * @opt_param string pageToken A token identifying the page of results to
    * return.
    *
@@ -139,16 +149,6 @@ class Google_Service_CloudTasks_Resource_ProjectsLocationsQueues extends Google_
    * maximum. Fewer queues than requested might be returned, even if more queues
    * exist; use ListQueuesResponse.next_page_token to determine if more queues
    * exist.
-   * @opt_param string filter `filter` can be used to specify a subset of queues.
-   * Any Queue field can be used as a filter and several operators as supported.
-   * For example: `<=, <, >=, >, !=, =, :`. The filter syntax is the same as
-   * described in [Stackdriver's Advanced Logs
-   * Filters](/logging/docs/view/advanced_filters).
-   *
-   * Sample filter "app_engine_http_target: *".
-   *
-   * Note that using filters might cause fewer queues than the requested_page size
-   * to be returned.
    * @return Google_Service_CloudTasks_ListQueuesResponse
    */
   public function listProjectsLocationsQueues($parent, $optParams = array())
@@ -284,7 +284,7 @@ class Google_Service_CloudTasks_Resource_ProjectsLocationsQueues extends Google_
    * Authorization requires the following [Google IAM](/iam) permission on the
    * specified resource parent:
    *
-   * * `cloudtasks.queues.setIamPolicy` (queues.setIamPolicy)
+   * * `cloudtasks.queues.setIamPolicy`  (queues.setIamPolicy)
    *
    * @param string $resource REQUIRED: The resource for which the policy is being
    * specified. See the operation documentation for the appropriate value for this
@@ -306,7 +306,7 @@ class Google_Service_CloudTasks_Resource_ProjectsLocationsQueues extends Google_
    *
    * Note: This operation is designed to be used for building permission-aware UIs
    * and command-line tools, not for authorization checking. This operation may
-   * "fail open" without warning. (queues.testIamPermissions)
+   * "fail open" without warning.  (queues.testIamPermissions)
    *
    * @param string $resource REQUIRED: The resource for which the policy detail is
    * being requested. See the operation documentation for the appropriate value

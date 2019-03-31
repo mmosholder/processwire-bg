@@ -3,10 +3,13 @@
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>{{ page.title }}</title>
+	<title>The Bluegrass Lounge | {{ page.title }}</title>
 	<meta name="description" content="{{ view.summary }}" />
+  <link rel="shortcut icon" type="image/x-icon" href="{{config.urls.templates}}images/favicon.ico" />
+  <link rel="stylesheet" type="text/css" href="{{ recurme.css}}">
 	<link rel="stylesheet" type="text/css" href="{{config.urls.templates}}styles/main.css" />
 	<script type='text/javascript' src='https://maps.googleapis.com/maps/api/js?key=AIzaSyATHVvqqbz699klt8B_7SKEB2BkyfFd_IE'></script>
+  <script src="https://use.fontawesome.com/bcb0ade4ba.js"></script>
 </head>
 <body class='has-sidebar'>
 
@@ -26,8 +29,8 @@
         <div class="-links">
           <ul>
             <li><a href="/">Home</a></li>
-            {% for page in pages.get('/').children %}
-              <li><a href="{{page.url}}">{{page.title}}</a></li>
+            {% for item in pages.get('/').children %}
+              <li class="{{ item.id == page.rootParent.id ? 'current' : '' }}"><a href="{{item.url}}">{{item.title}}</a></li>
             {% endfor %}
           </ul>
         </div>
@@ -51,13 +54,30 @@
 						<div class="-time">7AM to 10PM</div>
 					</div>
 					<div class="-item">
-						<div class="-title">Friday &amp; Saturday</div>
+						<div class="-title">Friday & Saturday</div>
 						<div class="-time">7AM to 12AM</div>
 					</div>
+          <div class="-item">
+            <div class="-title">Daily Happy Hour</div>
+            <div class="-time">3PM to 6PM</div>
+          </div>
 				</div>
 				<div class="links">
-					<ul></ul>
-				</div>
+          <ul>
+            <li><a href="/">Home</a></li>
+            {% for item in pages.get('/').children %}
+              <li class="{{ item.id == page.rootParent.id ? 'current' : '' }}"><a href="{{item.url}}">{{item.title}}</a></li>
+            {% endfor %}
+          </ul>
+          </ul>
+          <ul>
+          	<li><a href="/menus">Coffee &amp; Tea</a></li>
+          	<li><a href="/menus">Breakfast &amp; Sunday Brunch</a></li>
+          	<li><a href="/menus"></a>Lunch &amp; Dinner</li>
+          	<li><a href="/menus">Drinks</a></li>
+          	<li><a href="/menus">Daily Happy Hour</a></li>
+          </ul>
+        </div>
 				<div class="contact">
 					<div class="-address">
 						<span>The Bluegrass</span>
@@ -66,13 +86,20 @@
 						<span>720-476-3950</span>
 					</div>
 					<div class="-social">
-
+            <a href="https://www.facebook.com/thebluegrasscoffeehouse/" target="_blank">
+              <i class="fa fa-facebook"></i>            
+            </a>
+            <a href="https://www.instagram.com/bluegrassloungearvada/" target="_blank">
+              <i class="fa fa-instagram"></i>
+            </a>
 					</div>
 				</div>
 			</div>
+      <div class="bottom">The Bluegrass &copy; {{now | date('Y')}}</div>
 		</div>
 	</footer>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="{{recurme.js}}"></script>
   <script src="{{config.urls.templates}}scripts/main.js"></script>
 </body>
 </html>

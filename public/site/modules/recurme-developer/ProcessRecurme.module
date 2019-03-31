@@ -1,0 +1,741 @@
+<?php namespace ProcessWire;
+
+/**
+ * ProcessWire Recurme Recuring Dates & Calendar Module
+ *
+ * created by Joshua Gatcke
+ * http://www.99lime.com
+ * Copyright 2017 by Joshua Gatcke
+ * 
+ *
+ * Date Format: 02/Sun/Apr/2017
+ * License: see LICENSE.TXT
+ *
+ */
+
+class ProcessRecurme extends Process {
+	
+		   private $calendarData;
+	static private $rootCalendarID;
+	static private $currentCalendar; // $page->ID
+	static private $currentCalendarData; // calendar[ID$key] array($data);
+	
+	public static function getModuleInfo() {
+		return array(
+			'title' 	=> 'Recurme Admin Calendar', 
+			'summary' 	=> 'Create custom calendars in the admin.', 
+			'version' 	=> 101, 
+			'author'	=> 'Joshua Gatcke', 
+			'icon' 		=> 'calendar', 
+			'href' 		=> 'http://99lime.com/modules/recurme/', 
+			'permission' => 'recurme-calendar', 
+			'page' => array(
+				'name' 		=> 'calendars',
+				'parent' 	=> 'pages', 
+				'title' 	=> 'Calendars',
+				'template' 	=> 'admin'
+			),
+			'installs' 	=> array('MarkupRecurme','InputfieldRecurme','FieldtypeRecurme'),
+			'requires' 	=> array('MarkupRecurme','InputfieldRecurme','FieldtypeRecurme')	
+		);
+	}
+
+	/**
+	 * 
+	 *	Let's get this party started.
+	 *
+	 */
+	public function init() {
+		parent::init(); // always remember to call the parent init
+		$this->modules->get('JqueryUI')->use('modal');
+		$this->config->styles->add( $this->config->urls->MarkupRecurme . "css/recurme-admin.css");
+		$this->config->scripts->add($this->config->urls->MarkupRecurme . "js/recurme.js?v=".rand(10,50));
+		$this->setCurrentCalendar();	// set the current calendar view
+ 
+	}
+	
+	/**
+	 * 
+	 *	Findout what calendar we should be looking at.
+	 *
+	 */
+	public function ___setCurrentCalendar(){
+		
+		// get the calendar data saved in MarkupRecurme.
+		$this->calendarData 	= wire('modules')->getModuleConfigData('MarkupRecurme');
+		
+		// if there is no root calendar, we gotta find it and save the data,
+		// set MarkupRecurme module $data rootCalendarID to this page ID
+		if(!isset($this->calendarData['rootCalendarID'])){
+			$p = $this->pages->get('template=admin,name=calendars');
+			$data['rootCalendarID'] = $p->id;
+			$data['calendars'] 		= array();
+			wire('modules')->saveModuleConfigData(wire('recurme'), $data);
+			$this->calendarData 	= wire('modules')->getModuleConfigData('MarkupRecurme');
+		}
+		
+		$this->rootCalendarID 	= $this->calendarData['rootCalendarID']; // MUST HAVE THIS
+		$this->currentCalendar 	= $this->rootCalendarID; 				 // default view
+		$this->checkCalendarData();		// check the calendarData
+
+		// if we are not on the root Calendar page,
+		// we must be on a different calendar.
+		if($this->page->id != $this->currentCalendar){
+			$this->currentCalendar = $this->page->id;
+		}
+		
+		if($this->input->get('id')){
+			$this->currentCalendar = $this->input->get('id');
+		}
+		
+		// get THIS calendar's settings
+		if(isset($this->calendarData['calendars'][$this->currentCalendar])){
+			$this->currentCalendarData = $this->calendarData['calendars'][$this->currentCalendar];
+		}
+		
+	}
+
+	/**
+	 * This function is executed when a page with your Process assigned is accessed. 
+ 	 *
+	 * 
+	 *  Shows all Calendars Overview;
+	 *	or, shows current calendar.
+	 *
+	 */
+	public function ___execute() {
+		
+		$out = '';
+		
+		// check license
+		if(!wire('recurme')->v){
+			
+			$out .= '<style type="text/css">.rm-notice{background:#fff;border:1px solid red;padding:10px;font-size:12px;line-height:1.2;color:red;margin:10px 0;}</style>';
+			$out .= '<div class="rm-notice"><i class="fa fa-warning"></i> Please provide your License Key here: ';
+			$out .= '<a href="'.wire('config')->urls->admin.'module/edit?name=MarkupRecurme">Recurme Module Settings</a></div>';
+			
+		}
+		
+		// if the current $page->id == the root calendar ID
+		// we are on the overview page
+		if($this->page->id == $this->calendarData['rootCalendarID']){
+			
+			$this->config->styles->add($this->config->urls->MarkupRecurme  . "css/recurme-theme-default.css");
+			$out .= $this->renderCalendarOverview();
+			
+		}else{
+			
+			// calendar filter
+			$data = array();
+			$filter = $this->input->post('filter');
+			if($filter){ $data['filter'] = $filter; }
+			
+			$out .= $this->renderCalendarView($data);
+			
+		}
+		
+		//$out .= "<pre>".print_r($this->cache->getInfo(), true)."</pre>";
+		//$out .= "<pre>".print_r(wire('modules')->getModuleConfigData(wire('recurme')), true)."</pre>";
+		//$out .= "<br /><br />".$this->recurme->renderDebug($this->recurme->parseDebug($this->calendarData));
+		
+		return $out;
+		
+	}
+	
+	public function ___executeConfigureCalendar() {
+		
+		// vars
+		$id = $this->input->get('id');
+		
+		if($id){
+			$pTitle = $this->pages->get($id)->title;
+			$this->headline('Configure '.$pTitle);
+			$this->breadcrumb('../', 'Calendars');	
+		}
+		
+		$postTitle = $this->input->post('calendar_title');
+		$updateTitle = false;
+		
+		$out  = '<br />';
+		$out .= $this->renderForm();
+		
+		$data = array(
+			'calendars' => array()
+		);
+		
+		// if there is no ID, we can't edit a calendar
+		$id = $this->input->get('id');
+		if(!$id){
+			$this->error('No Calendar ID provided: could not edit calendar');
+			return $out;
+		}
+		
+		if($this->input->post('savesubmit') && $postTitle){
+			
+			// if the title has been changed, update the page.
+			if($this->currentCalendarData['calendar_title'] != $postTitle){
+				$p = $this->pages->get($id);
+				if($p->id){
+					$p->of(false);
+					$p->title = $postTitle;
+					$p->name  = $this->sanitizer->name($postTitle);
+					$p->save(); // need error checking here.
+				}
+			}
+						
+			$data = array_replace_recursive($data, $this->calendarData);
+			foreach($this->input->post as $key => $value){
+				$data['calendars'][$id][$key] = $value;
+			}
+			
+			// filter out checkboxes - for unchecked values. this is a total HACK. 
+			// I couldn't figure out the proper way to deal with this. 
+			if(!$this->input->post('load_css')){ unset($data['calendars'][$id]['load_css']); }
+			if(!$this->input->post('show_list')){ unset($data['calendars'][$id]['show_list']); }
+			if(!$this->input->post('show_filters')){ unset($data['calendars'][$id]['show_filters']); }
+			
+			// save the data to the module
+			if(wire('modules')->saveModuleConfigData(wire('recurme'), $data)){	
+				$this->message('Calendar has been saved.');
+				$this->modules->resetCache();
+				$this->session->redirect($this->pages->get($id)->url);
+			}else{ $this->error('Could not save Calendar Data :('); }
+		}
+		
+		return $out;
+		
+	}
+	
+	public function ___executeAddCalendar() {
+
+		$this->headline('Add New Calendar'); 
+		$this->breadcrumb('../', 'Calendars'); 
+
+		$out  = '<br />';
+		
+		$defaults = array(
+			'calendar_title' 	=> 'New Calendar',
+			'selector' 			=> '',
+			'custom_css' 		=> '',
+			'load_css' 			=> 1,
+			'show_list' 		=> 1,
+			'show_filters' 		=> 1,
+			'filter'			=> ''
+		);
+		
+		$out .= $this->renderForm($defaults);
+		
+		if(wire('input')->post('savesubmit') && wire('input')->post('calendar_title')){
+
+			// variables
+			$calendarTitle = wire('sanitizer')->text(wire('input')->post('calendar_title'));
+			$calendarName = wire('sanitizer')->name(wire('input')->post('calendar_title'));
+						
+			$data = array(
+				'calendars' => array()
+			);
+			
+			// create the new page, if good - save the calendar data.
+			$parent = $this->pages->get($this->rootCalendarID);
+			$page = $this->pages->get('template=admin,name='.$calendarName);
+			if (!$page->id) {
+				$page = new Page();
+				$page->template = 'admin';
+				$page->parent = $parent;
+				$page->title = $calendarTitle;
+				$page->name = $calendarName;
+				$page->process = $this;
+				if($page->save()){
+					
+					// time to save the calendar data
+					$newPage = $this->pages->get('template=admin,name='.$calendarName);
+					if($newPage->id){
+						
+						// make new calendar holder
+						$data['calendars'][$newPage->id] = array();
+						
+						// get the existing data
+						$data = array_replace_recursive($data, $this->calendarData);
+						foreach(wire('input')->post as $key => $value){
+							$data['calendars'][$newPage->id][$key] = $value;
+						}
+						
+						// save the data to the module
+						if(wire('modules')->saveModuleConfigData(wire('recurme'), $data)){
+							$this->message('New Calendar '.$calendarName.' has been saved.');
+							$this->modules->resetCache();
+							$this->session->redirect($newPage->url);
+						}else{ $this->error('Could not save Calendar Data :('); }
+					}
+					
+				}else{ $this->error('Something went wrong, calendar NOT saved.'); }
+			}else{ $this->error('Calendar already exists. Please change the title/name.'); }
+			
+
+		}
+		
+		return $out; 
+	}
+	
+	public function ___executeDeleteCalendar() {
+		
+		$pageID 	= $this->input->get('id');
+		$page 		= false;
+		$pageTitle 	= false;
+		
+		if($pageID){ $page = $this->pages->get($pageID); }
+		if($page->id){ 
+			$pageTitle = $page->title;
+			if($page->trash()){
+				$this->message('Calendar '.$pageTitle.' has been sent to the trash.');
+				$this->modules->resetCache(); 
+				$this->session->redirect($this->pages->get($this->rootCalendarID)->url);
+			}else{
+				$this->error('Calendar could not be deleted.');
+			}
+		}
+			
+	}
+	
+	public function ___checkCalendarData(){
+		
+		// check if the calendarData pages exists,
+		// if not, delete that old data.
+		
+		$data = $this->calendarData;
+		
+		foreach($data['calendars'] as $key => $cal){
+			$pExists = $this->pages->get($key);
+			if(!$pExists->id){ 
+				unset($data['calendars'][$key]); 
+			}
+		}
+		
+		// save the clean data back to the module;
+		wire('modules')->saveModuleConfigData(wire('recurme'), $data);
+		
+	}
+	
+	public function ___renderCalendarOverview(){
+		
+		$out = '';
+		
+		$this->headline('Calendars');
+		
+		$options = array(
+			'mini' 			=> true,
+			'sidebar' 		=> false,
+			'show_filters' 	=> false,
+			'show_list' 	=> false,
+			'load_css'		=> false
+			//'showArrows'	=> false
+		);
+		
+		$out .= '<div class="rm-overview">';
+		foreach($this->calendarData['calendars'] as $key => $cal){
+			
+			// merge settings
+			$cal = array_replace_recursive($cal, $options);
+			
+			$out .= '<div class="rm-overview-holder">';
+			$out .= '<div class="rm-overview-heading">';
+			$out .= '<a href="'.$this->pages->get($key)->url.'">'.$cal['calendar_title'].'</a>';
+			$out .= '<span class="rm-actions">';
+			////&modal=1" class="pw-modal"
+			$out .= '<a href="'.$this->pages->get($this->rootCalendarID)->url.'configure-calendar/?id='.$this->pages->get($key)->id.'"><i class="fa fa-cog"></i></a>';
+			$out .= '</span>';
+			$out .= '</div>';
+			$out .= $this->renderCalendar($cal);
+			$out .= '</div>';
+		}
+		
+		// add calendar link :) Awesomeness!
+		$out .= '<a id="rm-link-addnew" href="add-calendar/"><span><i class="fa fa-plus"></i> Add New</span></a>';
+		$out .= '</div>';
+		
+		return $out;
+		
+	}
+	
+	public function ___renderCalendarView($override = false){
+		
+		$out  = '';
+		$calendar = new rmCalendar();
+		
+		// set default options
+		$options 	= $calendar->getDefaultCalendarOptions();
+		$data		= array_replace_recursive($options, $this->currentCalendarData);
+		if($override){ $data = array_replace_recursive($data, $override); }
+		
+		// filter selector field
+		if(isset($_POST['filter'])){ $data['filter'] = $_POST['filter']; }
+		
+		$out .= '<h2 class="rm-calendar-heading">'.$this->page->title;
+		$out .= '<span class="rm-actions">';
+		$out .= '<a title="'.$this->_('Trash Calendar').'" href="'.$this->pages->get($this->rootCalendarID)->url.'delete-calendar/?id='.$this->page->id.'"><i class="fa fa-trash"></i></a>';
+		$out .= '<a title="'.$this->_('Configure Calendar').'" href="'.$this->pages->get($this->rootCalendarID)->url.'configure-calendar/?id='.$this->page->id.'"><i class="fa fa-cog"></i></a>';
+		$out .= '</span></h2>';
+		$out .= $this->renderCalendar($data);
+		
+		return $out;
+	}
+	
+	public function ___renderCalendar($data = false){
+		
+		$out = '';
+
+		$calendar = new rmCalendar();
+		
+		//wire('recurme')->debug = true;
+		wire('recurme')->deleteCache();
+				
+		// options for the calendar
+		$options = array(
+			'selector'			=> '',
+			'month' 			=> date('m', time()),
+			'year'				=> date('Y', time()),
+			'cache'				=> true,
+			'filter'		 	=> '',
+			'custom_css'		=> '',
+			'show_filters'		=> false,
+			'load_css'			=> false,
+			'show_list'			=> false,
+			'dateField'			=> 'recurme'
+		);
+		
+		// merge data & overrides into options
+		if($data){ $options = array_replace_recursive($options, $data); }
+		
+		// if they want the default CSS
+		if($options['load_css']){
+			$this->config->styles->add($this->config->urls->MarkupRecurme  . "css/recurme-theme-default.css");
+		}
+		
+		// if they want a custom CSS file
+		if($options['custom_css']){
+			$this->config->styles->add($this->config->urls->templates  . $options['custom_css']);
+		}
+		
+		// if it's mini, don't show filters
+		if(!$options['mini'] && $options['show_filters']){
+			
+			// create a pw filter field
+			$form = $this->modules->get('InputfieldForm');
+			$form->attr('id','calendar_options');
+			$form->attr('method', 'post');
+			$form->attr('action', './?'.$_SERVER['QUERY_STRING']);
+			
+			$fieldset = $this->modules->get('InputfieldFieldset');
+			$fieldset->label = $this->_('Calendar Filters');
+			$fieldset->collapsed = 0;
+			
+			$field = $this->modules->get("InputfieldSelector"); 
+			$field->label = $this->_("Filter");
+			$field->attr('name','filter');
+			$field->attr('value', $options['filter']);
+			if(!$field->get('value')){ $field->collapsed = 1; $fieldset->collapsed = 1; }
+			$fieldset->append($field);
+			
+			$button = $this->modules->get('InputfieldButton');
+			$button->attr('type', 'submit'); 
+			$button->attr('name', 'filtersubmit'); 
+			$button->attr('value', $this->_('Filter'));
+			$fieldset->append($button);
+			
+			// add to form
+			$form->append($fieldset);
+			$out .= $form->render();
+		}
+		
+		// check for $_GET variables m= & y=
+		if(isset($_GET['m'])) { $options['month'] = $_GET['m']; }
+		if(isset($_GET['y'])) { $options['year']  = $_GET['y']; }
+		
+		// create complete selector
+		$options['selector'] = $options['selector'].','.$options['filter'];
+		
+		// if they are showing the list, turn off ajax
+		if($options['show_list'] || $options['show_filters']){
+			$options['ajax'] = false;
+		}
+		
+		// create the event URL - modify for popup;
+		if(wire('page')->template->name == 'admin' || $this->input->get('al')){ 
+			$options['renderEvent']['xItem'] = '<span class="rm-date">{time}</span> <a href="{link}&modal=1" class="pw-modal" title="{title}">{title}</a>';
+		}
+		
+		// add columns
+		// Calendar display
+		$out .= '<div class="rm-row">';
+		$out .= '<div class="rm-col1">'.$calendar->render($options).'</div>';
+	
+		if(!$options['mini'] && $options['show_list']){
+			// list
+			$listOptions['renderEvent']['xItem'] = '<a href="{link}&modal=1" class="pw-modal" title="{title}">';
+			$out .= '<div class="rm-col2">'.wire('recurme')->renderList($calendar->events, $listOptions).'</div>';
+		}
+		$out .= '</div>';
+		
+		return $out;
+		
+	}
+
+	public function ___renderForm($defaults = array()){
+		
+		$out = '';
+		$dateFields = array('+recurme','created', 'modified', 'published');
+		
+		$calData = array(
+			'calendar_title' 	=> '',
+			'selector' 			=> '',
+			'custom_css' 		=> '',
+			'dateField'			=> 'recurme',
+			'load_css' 			=> 0,
+			'show_list' 		=> 0,
+			'show_filters' 		=> 0,
+			'filter'			=> ''
+		);
+		
+		// merge any defaults we just set
+		$calData = array_replace_recursive($calData, $defaults);
+		
+		// find out what calendar we are talking about;
+		if(wire('input')->post('savesubmit')){
+			$calData = wire('input')->post();
+		}else if($this->currentCalendar && $this->currentCalendarData){
+			$calData = array_replace_recursive($calData,$this->currentCalendarData);
+		}
+		
+		// selectable date fields
+		foreach($this->fields->find('type=FieldtypeDatetime') as $field){ $dateFields[] = $field->name; }
+		natsort($dateFields); // sort the dateFields array
+		$dateFields = implode("\n", $dateFields);
+		
+		$form = $this->modules->get('InputfieldForm');
+		$form->attr('id','calendar_options');
+		$form->attr('method', 'post');
+		if($this->input->get('id')){
+			$form->attr('action', './?id='.$this->input->get('id'));
+		}
+		
+		$fieldset = $this->modules->get('InputfieldFieldset');
+		$fieldset->label = $this->_('Calendar Filters');
+		$fieldset->collapsed = false;
+		
+		$text = $this->modules->get('InputfieldText');
+		$text->attr('name+id', 'calendar_title');
+		$text->attr('value', $calData['calendar_title']);
+		$text->label = 'Calendar Title';
+		$text->collapsed = 0;
+		$text->required = 1;
+		$form->append($text);
+		
+		$field = $this->modules->get("InputfieldSelector"); 
+		$field->label = $this->_("Events Selector");
+		$field->attr('name+id','selector');
+		// set blank value to inintial selector string
+		$field->attr('value', $calData['selector']);
+		$field->description = 'Leave blank to show all Recurme recurring events.';
+		//$field->collapsed = 2;
+		if(!$field->get('value')){ $field->attr('value','template='); }
+		$form->append($field);
+		
+		$dateSelect = $this->modules->get('InputfieldSelect');
+		$dateSelect->attr('name+id', 'dateField');
+		$dateSelect->attr('value', $calData['dateField']);
+		$dateSelect->addOptionsString($dateFields);
+		$dateSelect->label = 'Alternate Date Field';
+		$dateSelect->description = 'This allows you to customize what date is being represented for events on your calendar.';
+		$dateSelect->notes = 'ie. "created", "modified"... (defaults to all "recurme" InputFields. Don\'t change this if you are using Recurme recurring dates.';
+		$dateSelect->collapsed = 1;
+		$dateSelect->columnWidth = 100;
+		$form->append($dateSelect);
+		
+		$text = $this->modules->get('InputfieldText');
+		$text->attr('name+id', 'custom_css');
+		$text->attr('value', $calData['custom_css']);
+		$text->label = 'Custom CSS';
+		$text->description = 'Use this to append a custom CSS file to the Calendar.';
+		$text->notes = 'Provide a path to your custom CSS file. Relative to /site/templates/ folder. Optional: copy the file /InputfieldRecur/css/recurme-default-theme.css to your site templates folder to modify.';
+		$text->collapsed = 2;
+		$form->append($text);
+		
+		$checkbox = $this->modules->get('InputfieldCheckbox');
+		$checkbox->attr('name+id', 'load_css');
+		$checkbox->attr('value', $calData['load_css']);
+		$checkbox->uncheckedValue = 0;
+		if($calData['load_css']) { $checkbox->attr('checked', 'checked'); }
+		$checkbox->label = 'Load Default CSS?';
+		$checkbox->description = '';
+		$checkbox->notes = '';
+		$checkbox->columnWidth = 33;
+		$form->append($checkbox);
+		
+		$checkbox2 = $this->modules->get('InputfieldCheckbox');
+		$checkbox2->attr('name+id', 'show_list');
+		$checkbox2->attr('value', $calData['show_list']);
+		$checkbox2->uncheckedValue = 0;
+		if($calData['show_list']) { $checkbox2->attr('checked', 'checked'); }
+		$checkbox2->label = 'Show List Sidebar?';
+		$checkbox2->description = '';
+		$checkbox2->notes = '';
+		$checkbox2->columnWidth = 33;
+		$form->append($checkbox2);
+		
+		$checkbox3 = $this->modules->get('InputfieldCheckbox');
+		$checkbox3->attr('name+id', 'show_filters');
+		$checkbox3->attr('value', $calData['show_filters']);
+		$checkbox3->attr('uncheckedValue','nowayjose');
+		if($calData['show_filters']) { $checkbox3->attr('checked', 'checked');}
+		$checkbox3->label = 'Show Calendar Filters?';
+		$checkbox3->description = '';
+		$checkbox3->notes = '';
+		$checkbox3->columnWidth = 33;
+		$form->append($checkbox3);
+		
+		$field = $this->modules->get("InputfieldSelector"); 
+		$field->label = $this->_("Preset Calendar Filters");
+		$field->attr('name+id','filter');
+		$field->attr('value', $calData['filter']);
+		if(!$field->get('value')){ $field->attr('value','template='); }
+		if(!$field->get('value')){ $field->collapsed = 1; $fieldset->collapsed = 1; }
+		$field->showIf = 'show_filters=1';
+		$form->append($field);
+		
+		$button = $this->modules->get('InputfieldButton');
+		$button->attr('type', 'submit'); 
+		$button->attr('name', 'savesubmit'); 
+		$button->attr('value', $this->_('Save Calendar'));
+		$form->append($button);
+		
+		//$form->append($fieldset);
+		
+		$out .= $form->render();
+		//$out .= "<pre>".print_r($this->calendarData,true)."</pre>";
+		
+		return $out;
+		
+	}
+
+	public function ___install() { 
+		
+		parent::___install();
+		
+		$installError = false;
+		
+		// create the calendars top level page.	
+		$page = $this->pages->get('template=admin,name=calendars');
+		if (!$page->id) {
+			$page 			= new Page();
+			$page->template = 'admin';
+			$page->parent 	= $this->pages->get($this->config->adminRootPageID);
+			$page->title 	= 'Calendars';
+			$page->name 	= 'calendars';
+			$page->process 	= $this;
+			if($page->save()){
+				
+				// set MarkupRecurme module $data rootCalendarID to this page ID
+				$p = $this->pages->get('template=admin,name=calendars');
+				$data['rootCalendarID'] = $p->id;
+				$data['calendars'] 		= array();
+				wire('modules')->saveModuleConfigData(wire('recurme'), $data);
+				
+			}
+		}
+		
+		// create the calendars permissions
+		$permission = $this->permissions->get('recurme-calendar');
+		if (!$permission->id) {
+			$p 			= new Permission();
+			$p->name 	= 'recurme-calendar';
+			$p->title 	= 'Recurring Events Calendar';
+			$permissioned = $p->save();			
+		}
+		
+		// AJAX - create a new template & move file
+		$template = $this->templates->get('recurme-ajax');
+		if(!$template->id) {
+			$fg 		= new Fieldgroup();
+			$fg->name 	= 'recurme-ajax';
+			$fg->add($this->fields->get('title'));
+			$fieldgrouped = $fg->save();
+			
+			$t 				= new Template();
+			$t->name 		= 'recurme-ajax';
+			$t->label 		= 'An ajax calendar template for Recurme Calendars';
+			$t->fieldgroup 	= $fg;
+			$t->noChildren 	= 1;
+			$t->noParents 	= -1;
+			$t->guestSearchable = 0;
+			$t->noChangeTemplate = 1;
+			$templated = $t->save();
+							
+			// get the file from the module folder
+			$fromFilePath = $this->config->urls->MarkupRecurme.'templates/';
+			$toFilePath = $this->config->paths->templates;
+			
+			// copy it to the templates folder
+			$copied = copy($copyFilePath, $toFilePath);
+			
+			// make a new page underhome to use as recurme-ajax
+			$p = new Page();
+			$p->name = 'recurme-ajax';
+			$p->parent = $this->pages->get('/');
+			$p->template = $this->templates->get('recurme-ajax');
+			$p->title = 'Recurme Ajax';
+			$p->addStatus('hidden');
+			$p->addStatus('locked');
+			$paged = $p->save();
+			
+			// finally we have done it all
+			if($installError == false){
+				$this->message('Recurme Ajax Template has been installed. :)');
+			}else{
+				$this->error('Something might have not installed correctly.');
+				//$this->error('Something went wrong. Please manually install /templates/recurme-ajax.php template. :(');
+			}
+			
+		}
+		
+		// reset module cache
+		$this->modules->resetCache();
+
+	}
+
+	
+	public function ___uninstall() {
+		
+		// delete permissions
+		parent::___uninstall();		
+		$permission = $this->permissions->get('recurme-calendar');
+		if ($permission->id) {
+			$permission->delete();	
+		}
+		
+		// delete recurme fields
+		foreach(wire('recurme')->recurFields as $rf){
+			$f = wire('fields')->get($rf);
+			$fg = $f->getFieldgroups();
+			foreach($fg as $g){
+				$g->remove($f);
+				$g->save();
+			}
+			wire('fields')->delete($f);
+		}
+		
+		// delete calendar pages
+		$recurmePages = $this->pages->find('template=admin,process=ProcessRecurme');
+		foreach($recurmePages as $p){
+			$p->trash();
+		}
+		
+		// delete the ajax template
+		$tp = $this->pages->get('/recurme-ajax/');
+		if($tp->id){ $tp->delete(); }
+		$t = $this->templates->get('recurme-ajax');
+		if($t->id){ $this->templates->delete($t); }
+		
+	}
+	
+}
+

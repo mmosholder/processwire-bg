@@ -26,3 +26,10 @@ $tabs.on('click', function(e) {
   clickedTab.addClass('active');
   activeContent.addClass('show');
 })
+
+// Prevent clicking on calendar events
+// const $events = $('.rm-calendar-list').find('a');
+
+// $events.on('click', function(e) {
+//   e.preventDefault();
+// })

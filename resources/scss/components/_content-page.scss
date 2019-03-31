@@ -8,6 +8,85 @@
       @include col(10);
       @include offset(1);
     }
+
+    &.-flex {
+      display: flex;
+      flex-wrap: wrap;
+      @include span(12);
+
+      @include mq($from: $breakpoint-small) {
+        @include span(10);
+        @include offset(1);
+      }
+    }
+
+    &-musician {      
+      @include col(12);
+      display: flex;
+      flex-wrap: wrap;
+
+      @include mq($from: $breakpoint-small) {
+        @include col(10);
+        @include offset(1);
+      }
+
+      &-left-col {
+        @include col(12);
+        margin-bottom: pxem(30);
+
+        @include mq($from: 600px) {
+          @include col(8);
+        }
+
+        @include mq($from: $breakpoint-small) {
+          margin-bottom: 0;
+          @include col(5);
+        }
+
+        img {
+          width: 100%;
+          height: auto;
+        }
+      }
+
+      &-right-col {
+        @include col(12);
+
+        @include mq($from: $breakpoint-small) {
+          @include col(7);
+        }
+
+        p {
+          margin-bottom: pxem(15);
+        }
+      }
+
+      a {
+        @include text-large-bold;
+        text-decoration: none;
+        position: relative;
+        transition: color 240ms $t-1;
+
+        &:after {
+          position: absolute;
+          width: 100%;
+          height: 2px;
+          bottom: 0;
+          left: 0;
+          content: "";
+          background-color: $color-brand-red;
+          transition: background-color 240ms $t-1;
+        }
+
+        &:hover {
+          color: lighten($color-dark-text, 25%);
+
+          &:after {
+            background-color: lighten($color-brand-red, 25%);
+          }
+        }
+      }
+    }
   }
 
   h1 {
@@ -19,23 +98,26 @@
   }
 
   .-two-columns {
-    column-count: 1;
-    column-gap: pxem(25);
-    height: pxem(200);
+    @include col(12);
     @include text-paragraph;
     margin-bottom: pxem(50);
 
-    p:first-of-type {
+    p {
       margin-bottom: pxem(15);
     }
 
     @include mq($from: $breakpoint-small) {
-      column-count: 2;
+      @include col(10);
+      @include offset(1);  
+      
+      p {
+        margin-bottom: pxem(15);
+      }
     }
   }
 
   .-full-width-image {
-    @include col(12);
+    @include span(12);
     margin-bottom: pxem(70);
 
     img {
@@ -49,56 +131,38 @@
     display: flex;
   }
 
-  .team-item {
-    width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    margin-bottom: pxem(70);
+  .image-item {
+    @include col(12);
 
-    .-text {
-      @include col(12);
-      order: 1;
+    @include mq($from: $breakpoint-xsmall) {
+      @include col(6);
+    }
 
-      @include mq($from: $breakpoint-small) {
-        @include col(6);
-        order: 0;
-      }
-
-      p {
-        margin-top: pxem(15);
-      }
-
-      p:first-of-type {
-        margin-top: pxem(0);
-      }
+    @include mq($from: $breakpoint-medium) {
+      @include col(4);
     }
 
     .-image {
-      @include col(12);
-      order: 0;
-      margin-bottom: pxem(15);
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-size: cover;
+      padding-top: calc(100vw - 30px);
+      margin-bottom: pxem(30);
 
-      @include mq($from: $breakpoint-small) {
-        @include col(6);
-        order: 1;
-        margin-bottom: 0;
+      @include mq($from: $breakpoint-xsmall) {
+        padding-top: calc(50vw - 90px);
       }
 
-      img {
-        width: 100%;
-      }
-    }
-
-    &.-text-left {
-      .-text {
-        padding-right: pxem(50);
+      @include mq($from: $breakpoint-medium) {
+        padding-top: calc(33vw - 70px);
       }
     }
+  }
 
-    &.-text-right {
-      .-text {
-        padding-left: pxem(50);
+  .rm-calendar-list {
+    li {
+      a {
+        white-space: normal;
       }
     }
   }
