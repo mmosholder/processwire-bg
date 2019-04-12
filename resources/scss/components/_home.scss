@@ -35,33 +35,11 @@
     .-award {
       text-align: center;
       display: inline-block;
+      width: 45%;
+      margin: 0 0 pxem(30) 0;
 
-      &.-first {
-        width: 25%;
-
-        @include mq($to: $breakpoint-small) {
-          width: 100%;
-          margin: 0 0 pxem(30) 0;
-        }
-      }
-
-      &.-center {
-        width: 40%;
-        // margin: 0 pxem(95) 0 pxem(60);
-
-        @include mq($to: $breakpoint-small) {
-          width: 100%;
-          margin: 0 0 pxem(30) 0;
-        }
-      }
-
-      &.-last {
-        width: 25%;
-
-        @include mq($to: $breakpoint-small) {
-          width: 100%;
-          margin: 0 0 pxem(30) 0;
-        }
+      @include mq($to: $breakpoint-small) {
+        width: 100%;          
       }
 
       .-title,

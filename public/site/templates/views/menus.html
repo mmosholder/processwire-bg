@@ -63,6 +63,9 @@
                       {% if menuItem.plain_text %}
                       <div class="menu-item-text"><p>{{ menuItem.plain_text }}</p></div>
                       {% endif %}
+                      {% if menuItem.menu_rich_text %}
+                      <div class="menu-item-text menu-rich-text"><p>{{ menuItem.menu_rich_text }}</p></div>
+                      {% endif %}
                     </div>
                   {% endfor %}
                   </div>
