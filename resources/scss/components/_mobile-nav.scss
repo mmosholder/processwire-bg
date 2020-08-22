@@ -4,7 +4,7 @@
   right: 15px;
   outline: none;
 
-  @include mq($from: $breakpoint-small) {
+  @include mq($from: $breakpoint-medium) {
     display: none;
   }
 }

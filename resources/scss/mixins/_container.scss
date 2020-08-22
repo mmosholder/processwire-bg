@@ -15,6 +15,10 @@
   @include mq($from: $breakpoint-large) {
     max-width: pxem(1260);
   }
+
+  @include mq($from: $breakpoint-xlarge) {
+    max-width: pxem(1440);
+  }
 }
 
 .container {

@@ -24,7 +24,7 @@ include('./_head.php'); // include header markup ?>
               <?php endif; ?>
               <div class="content-musician-right-col">
                 <p><?php echo $page->plain_text; ?></p>
-                <a href="<?php echo $page->musician_url ?>">Musican Website</a>
+                <a href="<?php echo $page->musician_url ?>">Event Website</a>
               </div>
             </div>
           <?php else: ?>

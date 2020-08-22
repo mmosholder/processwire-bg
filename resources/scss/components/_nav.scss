@@ -6,7 +6,7 @@
   z-index: 2;
   border-bottom: 2px solid $color-brand-red;
 
-  @include mq($from: $breakpoint-small) {
+  @include mq($from: $breakpoint-medium) {
     padding-top: pxem(80);
     padding-bottom: pxem(30);
     border-bottom: 0;
@@ -15,7 +15,7 @@
   .-row {
     justify-content: center;
 
-    @include mq($from: $breakpoint-small) {
+    @include mq($from: $breakpoint-medium) {
       justify-content: flex-end;
     }
   }
@@ -23,7 +23,7 @@
   .-logo {
     display: none;
 
-    @include mq($from: $breakpoint-small) {
+    @include mq($from: $breakpoint-medium) {
       display: inline-flex;
       justify-content: flex-end;
       width: pxem(95);
@@ -38,7 +38,7 @@
   .-wordmark {
     display: inline-flex;
 
-    @include mq($from: $breakpoint-small) {
+    @include mq($from: $breakpoint-medium) {
       display: none;
     }
   }
@@ -54,7 +54,7 @@
     background-color: $color-body-bg;
     padding-top: pxem(70);
 
-    @include mq($from: $breakpoint-small) {
+    @include mq($from: $breakpoint-medium) {
       opacity: 1;
       width: 94%;
       padding-left: $gutter-width/2;
@@ -78,7 +78,7 @@
     flex-basis: auto;
     border-top: 2px solid $color-brand-red;
 
-    @include mq($from: $breakpoint-small) {
+    @include mq($from: $breakpoint-medium) {
       justify-content: center;
       border-top: 2px solid $color-border;
       border-bottom: 2px solid $color-border;
@@ -93,7 +93,7 @@
     margin: pxem(10) 0;
     padding: 0 pxem(20);
 
-    @include mq($from: $breakpoint-small) {
+    @include mq($from: $breakpoint-medium) {
       padding: pxem(25) pxem(20) pxem(15) pxem(20);
       position: relative;
       display: inline-flex;

@@ -1,6 +1,13 @@
 .content-page {
   padding-top: pxem(50);
 
+  &.-pattern {
+    background-color: #efebe3;
+background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Cg fill='%23d8cfbe' fill-opacity='0.31'%3E%3Cpath d='M12 0h18v6h6v6h6v18h-6v6h-6v6H12v-6H6v-6H0V12h6V6h6V0zm12 6h-6v6h-6v6H6v6h6v6h6v6h6v-6h6v-6h6v-6h-6v-6h-6V6zm-6 12h6v6h-6v-6zm24 24h6v6h-6v-6z'%3E%3C/path%3E%3C/g%3E%3C/svg%3E");
+    background-position: 0 0;
+    background-repeat: repeat;
+  }
+
   .content {
     @include col(12);
 
@@ -20,7 +27,7 @@
       }
     }
 
-    &-musician {      
+    &-musician {
       @include col(12);
       display: flex;
       flex-wrap: wrap;
@@ -32,16 +39,18 @@
 
       &-left-col {
         @include col(12);
+        @include offset(0);
         margin-bottom: pxem(30);
 
         @include mq($from: 600px) {
           @include col(8);
+          @include offset(2);
         }
 
-        @include mq($from: $breakpoint-small) {
-          margin-bottom: 0;
-          @include col(5);
-        }
+        // @include mq($from: $breakpoint-small) {
+        //   margin-bottom: 0;
+        //   @include col(5);
+        // }
 
         img {
           width: 100%;
@@ -51,10 +60,16 @@
 
       &-right-col {
         @include col(12);
+        @include offset(0);
 
-        @include mq($from: $breakpoint-small) {
-          @include col(7);
+        @include mq($from: 600px) {
+          @include col(10);
+          @include offset(1);
         }
+
+        // @include mq($from: $breakpoint-small) {
+        //   @include col(7);
+        // }
 
         p {
           margin-bottom: pxem(15);
@@ -106,10 +121,36 @@
       margin-bottom: pxem(15);
     }
 
+    a {
+      @include text-large-bold;
+      text-decoration: none;
+      position: relative;
+      transition: color 240ms $t-1;
+
+      &:after {
+        position: absolute;
+        width: 100%;
+        height: 2px;
+        bottom: 0;
+        left: 0;
+        content: "";
+        background-color: $color-brand-red;
+        transition: background-color 240ms $t-1;
+      }
+
+      &:hover {
+        color: lighten($color-dark-text, 25%);
+
+        &:after {
+          background-color: lighten($color-brand-red, 25%);
+        }
+      }
+    }
+
     @include mq($from: $breakpoint-small) {
       @include col(10);
-      @include offset(1);  
-      
+      @include offset(1);
+
       p {
         margin-bottom: pxem(15);
       }

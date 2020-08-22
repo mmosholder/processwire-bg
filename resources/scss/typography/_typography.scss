@@ -70,15 +70,16 @@
 @mixin nav-link {
   @include josefin-regular;
   font-weight: 700;
-  font-size: pxem(14);
+  font-size: 14px;
   text-transform: uppercase;
   color: $text-dark;
   text-decoration: none;
   position: relative;
 
-  @include mq($from: $breakpoint-medium) {
-    font-size: pxem(18);
+  @include mq($from: $breakpoint-xlarge) {
+    font-size: 16px;
   }
+
 }
 
 @mixin page-title {
@@ -91,7 +92,7 @@
 
   @include mq($from: $breakpoint-small) {
     font-size: pxem(26);
-  } 
+  }
 }
 
 @mixin text-large-bold {
@@ -102,7 +103,7 @@
 
   @include mq($from: $breakpoint-small) {
     font-size: pxem(14);
-  }  
+  }
 }
 
 @mixin title-footer {

@@ -2,7 +2,7 @@
 
 include('./_head.php'); // include header markup ?>
 
-	<div class="content-page">
+	<div class="content-page -pattern">
 
 		<div class="container">
       <div class="-row">

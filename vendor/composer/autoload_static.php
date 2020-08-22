@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit51229b05631b12fe544e4ef3f26592f1
+class ComposerStaticInitc8873e42fb92586afca4f602da1b89d5
 {
     public static $files = array (
         '4ba1167ff053aab3afcc2d28993cfca7' => __DIR__ . '/../..' . '/wire/core/ProcessWire.php',

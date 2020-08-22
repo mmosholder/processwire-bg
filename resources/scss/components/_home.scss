@@ -30,7 +30,7 @@
   .-awards {
     margin: pxem(40) 0;
     justify-content: center;
-    text-align: center;
+    // text-align: center;
 
     .-award {
       text-align: center;
@@ -39,7 +39,7 @@
       margin: 0 0 pxem(30) 0;
 
       @include mq($to: $breakpoint-small) {
-        width: 100%;          
+        width: 100%;
       }
 
       .-title,
@@ -52,6 +52,17 @@
         margin: pxem(5) 0;
       }
     }
+
+    .content {
+      width: 90%;
+    }
+
+    p {
+      color: $color-white;
+      margin-bottom: pxem(17);
+      font-size: 18px;
+      font-weight: 600;
+    }
   }
 
   .button {
@@ -62,4 +73,6 @@
       @include offset(4);
     }
   }
+
+
 }
